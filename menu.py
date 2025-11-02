@@ -69,7 +69,59 @@ class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Men
             if self.state == 'Start':
                 self.game.playing = True
             elif self.state == 'Options':
-                pass
+                self.game.curr_menu = self.game.options
             elif self.state == 'Credits':
-                pass
+                self.game.curr_menu = self.game.credits
             self.run_display = False
+
+class OptionsMenu(Menu): # Menu subclass
+    def __init__(self, game): # pass in game object
+        Menu.__init__(self, game) # run init function for Menu
+        self.state = 'Volume'
+        self.volx, self.voly, = self.mid_w, self.mid_h + 20
+        self.controlsx, self.controlsy = self.mid_w, self.mid_h + 40
+        self.cursor_rect.midtop = (self.volx + self.offset, self.voly)
+
+    def display_menu(self):
+        self.run_display = True
+        while self.run_display: # While the options menu is running
+            self.game.check_events()
+            self.check_input()
+            self.game.display.fill((0,0,0))
+            self.game.draw_text('Options', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 30) # title of the sreeen
+            self.game.draw_text("Volume", 15, self.volx, self.voly)  # First option
+            self.game.draw_text("Controls", 15, self.controlsx, self.controlsy)
+            self.draw_cursor()
+            self.blit_screen()
+
+    def check_input(self): # check input for the optionsmenu class
+        if self.game.BACK_KEY: # if back_key is set to ON meaning it's been pressed this frame
+            self.game.curr_menu = self.game.main_menu
+            self.run_display = False
+        elif self.game.UP_KEY or self.game.DOWN_KEY: # allows us to navigate between volume and controls in the options menu
+            if self.state == 'Volume':
+                self.state = 'Controls'
+                self.cursor_rect.midtop = (self.controlsx + self.offset, self.controlsy)
+            elif self.state == 'Controls':
+                self.state = 'Volume'
+                self.cursor_rect.midtop = (self.volx + self.offset, self.voly)
+
+        elif self.game.START_KEY:
+        # TO-DO: Create a Volume Menu and a Controls Menu
+            pass
+
+class CreditsMenu(Menu): # child of Menu
+    def __init__(self, game):
+        Menu.__init__(self,game)
+
+    def display_menu(self):
+        self.run_display = True
+        while self.run_display: # runs every frame
+            self.game.check_events()
+            if self.game.START_KEY or self.game.BACK_KEY: # if enter or backspace are pressed
+                self.game.curr_menu = self.game.main_menu # exit credits
+                self.run_display = False
+            self.game.display.fill(self.game.BLACK)
+            self.game.draw_text('Credits', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20) # draw_text function we made in the game class
+            self.game.draw_text('Ryan Nageer', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 10)
+            self.blit_screen() # display shit to screen and set inputs back to false every frame

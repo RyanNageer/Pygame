@@ -1,17 +1,20 @@
 import pygame # package
-from menu import MainMenu # now we have access to the MainMenu class
+from menu import * # now we have access to the MainMenu class
 
 class Game(): # Contains our info and variables related to the game, user inputs, game loop, drawing stuff to the screen,
     def __init__(self):
         pygame.init()
-        self.running, self.player = True, False # game is running but player is not currently playing
+        self.running, self.playing = True, False # game is running but player is not currently playing
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False # Controls for our menu initialized to false. Upon keystroke (ex. UP arrow) they will be set to true
         self.DISPLAY_W, self.DISPLAY_H = 480, 270 # width and height of our canvas
         self.display = pygame.Surface((self.DISPLAY_W,self.DISPLAY_H)) # Canvas(dimensions)
         self.window = pygame.display.set_mode(((self.DISPLAY_W,self.DISPLAY_H))) # we want player to see what we're drawing. so this line displays the canvas
         self.font_name = '8-BIT WONDER.TTF'
         self.BLACK, self.WHITE = (0,0,0), (255,255,255)
-        self.curr_menu = MainMenu(self) # create a MainMenu object called curr_menu. the "self" allows game to be passed as an argument to MainMenu, giving MainMenu full access to our game's funtions and variables
+        self.main_menu = MainMenu(self) #  create a MainMenu object called main_menu. the "self" allows game to be passed as an argument to MainMenu, giving MainMenu full access to our game's funtions and variables   
+        self.options = OptionsMenu(self) # options menu object, pass in game object     
+        self.credits = CreditsMenu(self) # pass in game
+        self.curr_menu = self.main_menu # this allows us to swap between what menu is currently being shown to the player
 
     def game_loop(self):
         while self.playing: # while player is playing
