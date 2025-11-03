@@ -62,12 +62,15 @@ class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Men
             elif self.state == 'Start':
                 self.cursor_rect.midtop = (self.creditsx + self.offset, self.creditsy)
                 self.state = 'Credits'
+                
 
     def check_input(self):
         self.move_cursor() # every frame we will check for input and adjust the cursor accordingly
-        if self.game.START_KEY: # If the player clicks start
-            if self.state == 'Start':
+        if self.game.ENTER_KEY: # If the player clicks Enter
+            if self.state == 'Start':     
                 self.game.playing = True
+                self.game.new()
+                self.game.main()
             elif self.state == 'Options':
                 self.game.curr_menu = self.game.options
             elif self.state == 'Credits':
@@ -95,7 +98,7 @@ class OptionsMenu(Menu): # Menu subclass
             self.blit_screen()
 
     def check_input(self): # check input for the optionsmenu class
-        if self.game.BACK_KEY: # if back_key is set to ON meaning it's been pressed this frame
+        if self.game.BACK_KEY or self.game.ESC_KEY: # if back_key is set to ON meaning it's been pressed this frame
             self.game.curr_menu = self.game.main_menu
             self.run_display = False
         elif self.game.UP_KEY or self.game.DOWN_KEY: # allows us to navigate between volume and controls in the options menu
@@ -106,7 +109,7 @@ class OptionsMenu(Menu): # Menu subclass
                 self.state = 'Volume'
                 self.cursor_rect.midtop = (self.volx + self.offset, self.voly)
 
-        elif self.game.START_KEY:
+        elif self.game.ENTER_KEY:
         # TO-DO: Create a Volume Menu and a Controls Menu
             pass
 
@@ -118,7 +121,7 @@ class CreditsMenu(Menu): # child of Menu
         self.run_display = True
         while self.run_display: # runs every frame
             self.game.check_events()
-            if self.game.START_KEY or self.game.BACK_KEY: # if enter or backspace are pressed
+            if self.game.ENTER_KEY or self.game.BACK_KEY or self.game.ESC_KEY: # if enter or backspace are pressed
                 self.game.curr_menu = self.game.main_menu # exit credits
                 self.run_display = False
             self.game.display.fill(self.game.BLACK)

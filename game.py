@@ -1,12 +1,15 @@
 import pygame # package
 from menu import * # now we have access to the MainMenu class
+from sprites import *
+from config import *
 
 class Game(): # Contains our info and variables related to the game, user inputs, game loop, drawing stuff to the screen,
     def __init__(self):
         pygame.init()
+        #Menu code
         self.running, self.playing = True, False # game is running but player is not currently playing
-        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False # Controls for our menu initialized to false. Upon keystroke (ex. UP arrow) they will be set to true
-        self.DISPLAY_W, self.DISPLAY_H = 480, 270 # width and height of our canvas
+        self.UP_KEY, self.DOWN_KEY, self.ENTER_KEY, self.BACK_KEY, self.ESC_KEY = False, False, False, False, False # Controls for our menu initialized to false. Upon keystroke (ex. UP arrow) they will be set to true
+        self.DISPLAY_W, self.DISPLAY_H = 640, 480 # width and height of our canvas
         self.display = pygame.Surface((self.DISPLAY_W,self.DISPLAY_H)) # Canvas(dimensions)
         self.window = pygame.display.set_mode(((self.DISPLAY_W,self.DISPLAY_H))) # we want player to see what we're drawing. so this line displays the canvas
         self.font_name = '8-BIT WONDER.TTF'
@@ -16,18 +19,26 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.credits = CreditsMenu(self) # pass in game
         self.curr_menu = self.main_menu # this allows us to swap between what menu is currently being shown to the player
 
-    def game_loop(self):
-        while self.playing: # while player is playing
-            self.check_events() #  for inputs
-            if self.START_KEY: # if start key is pressed
-                self.playing = False # breaks the while self.playing loop on line 17
-            self.display.fill(self.BLACK) # reset our Canvas before drawing the next image. without this line it's like drawing on the same page in a flip book instead of turning to the next page
-            self.draw_text('Start diggin in yo butt twin', 20, self.DISPLAY_W/2, self.DISPLAY_H/2) # calling the draw_text function we made. we use font size 20 and 480/2 and 270/2 for our coordinates which should put the text in the center of the screen.
-            self.window.blit(self.display, (0,0)) # "BLock Image Transfer" aka copy our canvas onto the visible window that our player sees (0,0) are our top-left XY coordinates
-            pygame.display.update() # physically puts this on the monitor/computer screen
-            self.reset_keys() # sets our flags back to false so we can accept new inputs
+        # ShawCode RPG Tutorial Code
+        self.screen = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(self.font_name)
+
+# CD Codes game loop that just displays text to the screen
+#     def game_loop(self):
+#         while self.playing: # while player is playing
+#             self.check_events() #  for inputs
+#             if self.ENTER_KEY: # if start key is pressed
+#                 self.playing = False # breaks the while self.playing loop on line 17
+#             self.display.fill(self.BLACK) # reset our Canvas before drawing the next image. without this line it's like drawing on the same page in a flip book instead of turning to the next page
+#             self.draw_text('Start diggin in yo butt twin', 20, self.DISPLAY_W/2, self.DISPLAY_H/2) # calling the draw_text function we made. we use font size 20 and 480/2 and 270/2 for our coordinates which should put the text in the center of the screen.
+#             self.window.blit(self.display, (0,0)) # "BLock Image Transfer" aka copy our canvas onto the visible window that our player sees (0,0) are our top-left XY coordinates
+#             pygame.display.update() # physically puts this on the monitor/computer screen
+#             self.reset_keys() # sets our flags back to false so we can accept new inputs
     
-    
+            
+    #CD Codes Menu Tutorial Code
+
     def check_events(self):
         for event in pygame.event.get(): # checks what the player can do on the computer
             if event.type == pygame.QUIT: # checks if player quits game (for example, hits the X button)
@@ -36,16 +47,18 @@ class Game(): # Contains our info and variables related to the game, user inputs
             # check for keyboard inputs
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN: # player has pressed the Enter key
-                    self.START_KEY = True
+                    self.ENTER_KEY = True
                 if event.key == pygame.K_BACKSPACE: # player has pressed the Enter key
                     self.BACK_KEY = True
+                if event.key == pygame.K_ESCAPE:
+                    self.ESC_KEY = True
                 if event.key == pygame.K_DOWN: # player has pressed the Enter key
                     self.DOWN_KEY = True
                 if event.key == pygame.K_UP: # player has pressed the Enter key
                     self.UP_KEY = True
 
     def reset_keys(self):
-        self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
+        self.UP_KEY, self.DOWN_KEY, self.ENTER_KEY, self.BACK_KEY, self.ESC_KEY = False, False, False, False, False
 
     def draw_text(self, text, size, x,y): # renders a surface (text_surface) containing our text (text), get_rect() just gives you a Rect object that matches the size of the rendered text surface, then move the rectangle onto the canvas
         font = pygame.font.Font(self.font_name, size) # Font(file_path=None, size=12)
@@ -55,5 +68,44 @@ class Game(): # Contains our info and variables related to the game, user inputs
         text_rect.center = (x,y) # moves the text’s center point to (x, y) coordinates on the canvas (self.display). assigns a x and y position to the center of the rectangle. so we can center the text wherever we want it to be.
         self.display.blit(text_surface, text_rect) # blit(source, dest, area=None, special_flags=0) -> Rect # copy the pixels from text_surface onto our canvas self.display, at the position text_rect
 
+    # ShawCode 
+    def new(self):
+        #ShawCode
+        # pygame.sprite.Sprite is a Simple base class for visible game objects.
+        self.all_sprites = pygame.sprite.LayeredUpdates() # Object that will contain all our sprites, walls, and enemies LayeredUpdates is a sprite group that handles layers and draws like OrderedUpdates.
+        self.blocks = pygame.sprite.LayeredUpdates()
+        self.enemies = pygame.sprite.LayeredUpdates()
+        self.attacks = pygame.sprite.LayeredUpdates()
+
+        self.player = Player(self, 1, 2)
+
+    def events(self):
+        # game loop events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.playing = False
+                self.running = False
+
+    def update(self):
+        self.all_sprites.update() # calls the update function on all_sprites in sprites.py
+    def draw(self):
+        self.screen.fill(BLACK)
+        self.all_sprites.draw(self.screen) # All_sprites group, draw will look through all sprites in all_sprites, finds the image and the rectangle and draws it to the window
+        self.clock.tick(FPS) # 1 tick per frame, 60 FPS
+        pygame.display.update()
+    def main(self):
+        # game loop
+        while self.playing:
+            self.events()
+            self.update()
+            self.draw()
+        self.running = False
+
+    def game_over(self):
+        pass
+    def intro_screen(self):
+        pass
+
+    
 # Surface = the photo or picture itself.
 # Rect = the picture frame that holds that photo and decides where to hang it on the wall.
