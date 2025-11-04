@@ -68,16 +68,28 @@ class Game(): # Contains our info and variables related to the game, user inputs
         text_rect.center = (x,y) # moves the text’s center point to (x, y) coordinates on the canvas (self.display). assigns a x and y position to the center of the rectangle. so we can center the text wherever we want it to be.
         self.display.blit(text_surface, text_rect) # blit(source, dest, area=None, special_flags=0) -> Rect # copy the pixels from text_surface onto our canvas self.display, at the position text_rect
 
-    # ShawCode 
+    # ShawCode
+
+    def createTilemap(self):
+        for i, row in enumerate(tilemap): # enumerate makes i set to the index and row is [i]
+            for j, column in enumerate(row):
+                if column == 'B':
+                    Block(self, j, i) # x, y. Creates a block at this position
+                if column == 'P':
+                    Player(self, j, i) # j is the column (x) and i is the row (y)
+
+     
     def new(self):
-        #ShawCode
+        
         # pygame.sprite.Sprite is a Simple base class for visible game objects.
         self.all_sprites = pygame.sprite.LayeredUpdates() # Object that will contain all our sprites, walls, and enemies LayeredUpdates is a sprite group that handles layers and draws like OrderedUpdates.
-        self.blocks = pygame.sprite.LayeredUpdates()
+        self.blocks = pygame.sprite.LayeredUpdates() # For collisions
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
 
-        self.player = Player(self, 1, 2)
+        # self.player = Player(self, 1, 2)
+        self.createTilemap()
+        
 
     def events(self):
         # game loop events

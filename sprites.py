@@ -5,7 +5,7 @@ import math
 import random
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y): # game object, and coordinates to position the player at
 
         self.game = game
         self._layer = PLAYER_LAYER
@@ -22,6 +22,7 @@ class Player(pygame.sprite.Sprite):
 
         self.facing = 'down'
 
+        image_to_load = pygame.image.load("img/")
         self.image = pygame.Surface([self.width, self.height]) # get an image that can later be drawn to the screen
         self.image.fill(RED) # make the image red
 
@@ -53,3 +54,23 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_DOWN]: # if left arrow key pressed
             self.y_change += PLAYER_SPEED # increase the y axis to move the player down
             self.facing = 'down'
+
+class Block(pygame.sprite.Sprite):
+    def __init__(self, game, x, y): # game object and position on the tilemap
+
+        self.game = game
+        self._layer = BLOCK_LAYER
+        self.groups = self.game.all_sprites, self.game.blocks
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
+        self.x = x * TILESIZE # Every sprite needs an image and rectangle
+        self.y = y * TILESIZE
+        self.width = TILESIZE
+        self.height = TILESIZE
+
+        self.image = pygame.Surface([self.width, self.height]) # image will always be 32 pixels long and wide 
+        self.image.fill(BLUE)
+
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
