@@ -4,6 +4,15 @@ from game import *
 import math
 import random
 
+class Spritesheet:
+    def __init__(self,file):
+        self.sheet = pygame.image.load(file).convert() # self.sheet is going to be the loaded image containing the sprite sheet, convert loads the image in faster so our game doesnt slow down
+
+    def get_sprite(self, x, y, width, height): # cut out sprite from sprite sheet
+        sprite = pygame.Surface([width, height])
+        sprite.blit(self.sheet, (0,0), (x, y, width, height)) # selects cutout from sprite sheet image and blits that particular sprite from the image to the screen
+        sprite.set_colorkey(BLACK) # Set color key so we don't have a black background
+        return sprite
 class Player(pygame.sprite.Sprite):
     def __init__(self, game, x, y): # game object, and coordinates to position the player at
 
@@ -22,9 +31,13 @@ class Player(pygame.sprite.Sprite):
 
         self.facing = 'down'
 
-        image_to_load = pygame.image.load("img/")
-        self.image = pygame.Surface([self.width, self.height]) # get an image that can later be drawn to the screen
-        self.image.fill(RED) # make the image red
+        # image_to_load = pygame.image.load("img/single2.png")
+        # self.image = pygame.Surface([self.width, self.height]) # get an image that can later be drawn to the screen
+        # self.image.set_colorkey(BLACK) # makes the specified color transparent
+        # self.image.blit(image_to_load, (0,0)) # draw the image we've loaded in onto a surface
+        
+        # x position in the sprite sheet, y position in the spritesheet, x amount of pixels across, y amount of pixels down. width & height == 32
+        self.image = self.game.character_spritesheet.get_sprite(3, 2, self.width, self.height) # calling get_sprite() from the Spritesheet class we made. referring to the Spritesheet object from the Spritesheet class we created above, we created the object in our __init__ function for the game class
 
         self.rect = self.image.get_rect() # set self.rect to be same size of the player
         self.rect.x = self.x
