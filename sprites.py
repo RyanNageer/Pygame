@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.y_change = 0
 
         self.facing = 'down'
+        self.animation_loop = 1
 
         # image_to_load = pygame.image.load("img/single2.png")
         # self.image = pygame.Surface([self.width, self.height]) # get an image that can later be drawn to the screen
@@ -45,6 +46,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
     def update(self):
         self.movement()
+        self.animate()
 
         self.rect.x += self.x_change # once we see a change in position due to movement
         self.collide_blocks('x') # we can check for collision
@@ -88,6 +90,55 @@ class Player(pygame.sprite.Sprite): # Layer 3
                     self.rect.y = hits[0].rect.top - self.rect.height
                 if self.y_change < 0:
                     self.rect.y = hits[0].rect.bottom
+    def animate(self):
+        down_animations = [self.game.character_spritesheet.get_sprite(3, 2, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(35, 2, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(68, 2, self.width, self.height)]
+        # copied and pasted from pygame rpg tutorial #6 description
+        up_animations = [self.game.character_spritesheet.get_sprite(3, 34, self.width, self.height),
+                         self.game.character_spritesheet.get_sprite(35, 34, self.width, self.height),
+                         self.game.character_spritesheet.get_sprite(68, 34, self.width, self.height)]
+
+        left_animations = [self.game.character_spritesheet.get_sprite(3, 98, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(35, 98, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(68, 98, self.width, self.height)]
+
+        right_animations = [self.game.character_spritesheet.get_sprite(3, 66, self.width, self.height),
+                            self.game.character_spritesheet.get_sprite(35, 66, self.width, self.height),
+                            self.game.character_spritesheet.get_sprite(68, 66, self.width, self.height)]
+        if self.facing == "down":
+            if self.y_change == 0: # if we're standing still, set player to static image
+                self.image = self.game.character_spritesheet.get_sprite(3,2, self.width, self.height)
+            else: # if we are currently moving
+                    self.image = down_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
+                    if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
+                        self.animation_loop = 1
+        if self.facing == "up":
+            if self.y_change == 0: # if we're standing still, set player to static image
+                self.image = self.game.character_spritesheet.get_sprite(3,34, self.width, self.height)
+            else: # if we are currently moving
+                    self.image = up_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
+                    if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
+                        self.animation_loop = 1
+        if self.facing == "left":
+            if self.x_change == 0: # if we're standing still, set player to static image
+                self.image = self.game.character_spritesheet.get_sprite(3,98, self.width, self.height)
+            else: # if we are currently moving
+                    self.image = left_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
+                    if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
+                        self.animation_loop = 1
+        if self.facing == "right":
+            if self.x_change == 0: # if we're standing still, set player to static image
+                self.image = self.game.character_spritesheet.get_sprite(3,66, self.width, self.height)
+            else: # if we are currently moving
+                    self.image = right_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
+                    if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
+                        self.animation_loop = 1
+
 
 class Block(pygame.sprite.Sprite): # Layer 2
     def __init__(self, game, x, y): # game object and position on the tilemap

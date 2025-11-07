@@ -24,7 +24,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(self.font_name)
 
-        self.character_spritesheet= Spritesheet('img/sprites_2.png')
+        self.character_spritesheet= Spritesheet('img/character.png')
         self.terrain_spritesheet = Spritesheet('img/terrain.png')
 
 # CD Codes game loop that just displays text to the screen
