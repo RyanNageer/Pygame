@@ -26,6 +26,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
 
         self.character_spritesheet= Spritesheet('img/character.png')
         self.terrain_spritesheet = Spritesheet('img/terrain.png')
+        self.enemy_spritesheet = Spritesheet('img/enemy.png')
 
 # CD Codes game loop that just displays text to the screen
 #     def game_loop(self):
@@ -81,7 +82,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
                     Block(self, j, i) # x, y. Creates a block at this position
                 if column == 'P':
                     Player(self, j, i) # j is the column (x) and i is the row (y)
-
+                if column == 'E':
+                    Enemy(self, j, i) # pass in game object (self) and coordinates
      
     def new(self):
         
