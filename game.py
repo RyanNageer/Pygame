@@ -84,6 +84,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
                     Player(self, j, i) # j is the column (x) and i is the row (y)
                 if column == 'E':
                     Enemy(self, j, i) # pass in game object (self) and coordinates
+                if column == 'N':
+                    NPC(self, j, i) # pass in game object (self) and coordinates
      
     def new(self):
         
@@ -92,6 +94,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.blocks = pygame.sprite.LayeredUpdates() # For collisions
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
+        self.npcs = pygame.sprite.LayeredUpdates() # add non playable characters to the all_sprites group
 
         # self.player = Player(self, 1, 2)
         self.createTilemap()

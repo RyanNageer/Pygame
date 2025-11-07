@@ -248,6 +248,26 @@ class Enemy(pygame.sprite.Sprite):
                         self.animation_loop = 1
 
 
+class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module
+    def __init__(self, game, x, y):
+        self.game = game
+        self._layer = NPC_LAYER
+        self.groups = self.game.all_sprites, self.game.npcs
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
+        self.x = x * TILESIZE # Every sprite needs an image and rectangle
+        self.y = y * TILESIZE
+        self.width = TILESIZE
+        self.height = TILESIZE
+
+
+        self.image = self.game.character_spritesheet.get_sprite(3, 2, self.width, self.height)
+
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+
 class Block(pygame.sprite.Sprite): # Layer 2
     def __init__(self, game, x, y): # game object and position on the tilemap
 
