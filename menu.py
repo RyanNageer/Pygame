@@ -1,5 +1,5 @@
 import pygame
-
+# menu class from CD Codes
 class Menu():
     def __init__(self, game): #reference to ourself and to a game object. for clarity python doesnt enforce types automatically so "game" here could techincally be any data type or object type, but we are gonna pass in a Game object.
         self.game = game # By doing self.game = game, you save a reference on the Menu instance, so other methods (e.g., draw(), update(), handle_input()) can access it later as self.game.

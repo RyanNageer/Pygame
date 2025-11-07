@@ -27,7 +27,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.character_spritesheet= Spritesheet('img/character.png')
         self.terrain_spritesheet = Spritesheet('img/terrain.png')
         self.enemy_spritesheet = Spritesheet('img/enemy.png')
-
+        self.intro_background = pygame.image.load('./img/introbackground.png')
+        self.game_over_background = pygame.image.load('./img/gameover.png')
 # CD Codes game loop that just displays text to the screen
 #     def game_loop(self):
 #         while self.playing: # while player is playing
@@ -120,12 +121,65 @@ class Game(): # Contains our info and variables related to the game, user inputs
             self.events()
             self.update()
             self.draw()
-        self.running = False
+        self.game_over()
+        # self.running = False
 
     def game_over(self):
-        pass
-    def intro_screen(self):
-        pass
+        text = self.font.render('Game Over', True, WHITE) # self.font is '8-BIT WONDER.TTF'
+        text_rect = text.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT/2))
+
+        restart_button = Button(10, WIN_HEIGHT - 60, 150, 50, WHITE, BLACK, 'Restart', 20)
+
+        for sprite in self.all_sprites: # remove sprites from screen since game ended
+            sprite.kill()
+
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
+
+            if restart_button.is_pressed(mouse_pos, mouse_pressed): #enters the values we just gathered to check if the button at this restart_button rectangle has in fact been pressed
+                self.playing = True
+                self.new()          
+                self.main()
+            
+            self.screen.blit(self.game_over_background, (0,0)) # display at the top left corner of the screen
+            self.screen.blit(text, text_rect)
+            self.screen.blit(restart_button.image, restart_button.rect)
+            self.clock.tick(FPS)
+            pygame.display.update()
+    
+    def intro_screen(self): # Alternate Title Screen from ShawCode
+        intro = True
+
+        title = self.font.render('Awesome Game', True, BLACK)
+        title_rect = title.get_rect(x=10,y=10)
+
+        play_button = Button(10, 50, 100, 50, WHITE, BLACK, 'Play', 32)
+
+        while intro:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    intro = False
+                    self.running = False
+            
+            mouse_pos = pygame.mouse.get_pos() # returns position of mouse
+            mouse_pressed = pygame.mouse.get_pressed() # returns whether mouse clicked or not
+
+            if play_button.is_pressed(mouse_pos, mouse_pressed):
+                intro = False
+                self.playing = True
+                self.new()
+                self.main()
+
+            self.screen.blit(self.intro_background, (0,0))
+            self.screen.blit(title, title_rect)
+            self.screen.blit(play_button.image, play_button.rect)
+            self.clock.tick(FPS)
+            pygame.display.update()
 
     
 # Surface = the photo or picture itself.

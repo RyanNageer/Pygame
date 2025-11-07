@@ -61,15 +61,23 @@ class Player(pygame.sprite.Sprite): # Layer 3
     def movement(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]: # if left arrow key pressed
+            for sprite in self.game.all_sprites:
+                sprite.rect.x += PLAYER_SPEED # moving all sprites (except the player) to the right to give the illusion the camera is moving
             self.x_change -= PLAYER_SPEED # reduce the x axis to move the player left
             self.facing = 'left'
         if keys[pygame.K_RIGHT]: # if left arrow key pressed
+            for sprite in self.game.all_sprites:
+                sprite.rect.x -= PLAYER_SPEED
             self.x_change += PLAYER_SPEED # reduce the x axis to move the player left
             self.facing = 'right'
         if keys[pygame.K_UP]: # if left arrow key pressed
+            for sprite in self.game.all_sprites:
+                sprite.rect.y += PLAYER_SPEED
             self.y_change -= PLAYER_SPEED # reduce the y axis to move the player up
             self.facing = 'up'
         if keys[pygame.K_DOWN]: # if left arrow key pressed
+            for sprite in self.game.all_sprites:
+                sprite.rect.y -= PLAYER_SPEED
             self.y_change += PLAYER_SPEED # increase the y axis to move the player down
             self.facing = 'down'
 
@@ -306,3 +314,35 @@ class Ground(pygame.sprite.Sprite): # Layer 1
         self.rect = self.image.get_rect() # create a rectangle and makes it the same size as self.image
         self.rect.x = self.x # assign the top left coorinates for the rectangle
         self.rect.y = self.y
+
+class Button:
+    def __init__(self, x , y, width, height, fg, bg, content, fontsize): # coords, size, foreground color, background color, text, and fontsize
+        self.font = pygame.font.Font('8-BIT WONDER.TTF', fontsize)
+        self.content = content
+
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+        self.fg = fg
+        self.bg = bg
+        self.image = pygame.Surface((self.width, self.height))
+        self.image.fill(self.bg)
+        self.rect = self.image.get_rect() # Hitbox of the button
+        
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+        self.text = self.font.render # Rendering the font variable
+
+        self.text = self.font.render(self.content, True, self.fg) # Rendering the text
+        self.text_rect = self.text.get_rect(center = (self.width/2, self.height/2))
+        self.image.blit(self.text, self.text_rect)
+
+    def is_pressed(self, pos, pressed): # get the position of the mouse, check if it collides with the button, check if the button has been pressed
+        if self.rect.collidepoint(pos): # checks “is this point inside my rectangle?” and returns True or False
+            if pressed[0]:
+                return True
+            return False
+        return False
