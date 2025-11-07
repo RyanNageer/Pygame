@@ -12,8 +12,8 @@ class Spritesheet:
         sprite = pygame.Surface([width, height])
         sprite.blit(self.sheet, (0,0), (x, y, width, height)) # selects cutout from sprite sheet image and blits that particular sprite from the image to the screen
         sprite.set_colorkey(BLACK) # Set color key so we don't have a black background
-        return sprite
-class Player(pygame.sprite.Sprite):
+        return sprite 
+class Player(pygame.sprite.Sprite): # Layer 3
     def __init__(self, game, x, y): # game object, and coordinates to position the player at
 
         self.game = game
@@ -46,8 +46,10 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         self.movement()
 
-        self.rect.x += self.x_change
+        self.rect.x += self.x_change # once we see a change in position due to movement
+        self.collide_blocks('x') # we can check for collision
         self.rect.y += self.y_change # change is a temporary variable of sorts and we use it to update the actual rectangle that refers to the player
+        self.collide_blocks('y')
 
         self.x_change = 0
         self.y_change = 0
@@ -68,7 +70,26 @@ class Player(pygame.sprite.Sprite):
             self.y_change += PLAYER_SPEED # increase the y axis to move the player down
             self.facing = 'down'
 
-class Block(pygame.sprite.Sprite):
+    def collide_blocks(self, direction):
+        if direction == 'x':
+            hits = pygame.sprite.spritecollide(self, self.game.blocks, False) # function from sprite library, checks if the rect of one sprite intersects with the rect of another sprite
+            # Third parameter (one marked false) asks if you want to delete the sprite when it has a collision
+            if hits:
+                if self.x_change > 0: # hits[0] is the wall we're colliding with
+                    self.rect.x = hits[0].rect.left - self.rect.width # because we takeaway the width of the rectangle, this creates the collision effect so the player cant walk on top the bock
+                if self.x_change < 0:
+                    self.rect.x = hits[0].rect.right
+
+
+        if direction == 'y':
+            hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
+            if hits:
+                if self.y_change > 0:
+                    self.rect.y = hits[0].rect.top - self.rect.height
+                if self.y_change < 0:
+                    self.rect.y = hits[0].rect.bottom
+
+class Block(pygame.sprite.Sprite): # Layer 2
     def __init__(self, game, x, y): # game object and position on the tilemap
 
         self.game = game
@@ -81,9 +102,28 @@ class Block(pygame.sprite.Sprite):
         self.width = TILESIZE
         self.height = TILESIZE
 
-        self.image = pygame.Surface([self.width, self.height]) # image will always be 32 pixels long and wide 
-        self.image.fill(BLUE)
+        #self.image = pygame.Surface([self.width, self.height]) # image will always be 32 pixels long and wide 
+        #self.image.fill(BLUE)
+
+        self.image = self.game.terrain_spritesheet.get_sprite(960, 448, self.width, self.height)
 
         self.rect = self.image.get_rect()
         self.rect.x = self.x
+        self.rect.y = self.y
+
+class Ground(pygame.sprite.Sprite): # Layer 1
+    def __init__(self, game, x, y):
+        self.game = game
+        self._layer = GROUND_LAYER
+        self.groups = self.game.all_sprites
+        pygame.sprite.Sprite.__init__(self, self.groups) # sets up all the sprite internals (so you get methods like .add(), .kill(), .groups()) and automatically adds the sprite to any Group objects you pass
+
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
+        self.width = TILESIZE
+        self.height = TILESIZE
+        
+        self.image = self.game.terrain_spritesheet.get_sprite(64, 352, self.width, self.height) # get the image
+        self.rect = self.image.get_rect() # create a rectangle and makes it the same size as self.image
+        self.rect.x = self.x # assign the top left coorinates for the rectangle
         self.rect.y = self.y

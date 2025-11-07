@@ -76,6 +76,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
     def createTilemap(self):
         for i, row in enumerate(tilemap): # enumerate makes i set to the index and row is [i]
             for j, column in enumerate(row):
+                Ground(self, j, i)
                 if column == 'B':
                     Block(self, j, i) # x, y. Creates a block at this position
                 if column == 'P':
