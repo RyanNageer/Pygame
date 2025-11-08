@@ -32,6 +32,25 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.facing = 'down'
         self.animation_loop = 1
 
+        # if we put the animations in the __init__ and add "self" to them we can call them any time insted of having them be in the animate function
+        # meaning we'd need to pull the animations every time the animate function runs, which is inefficient
+        # having them in __init__ already, readily accessible, is more efficient
+        self.down_animations = [self.game.character_spritesheet.get_sprite(3, 2, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(35, 2, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(68, 2, self.width, self.height)]
+        # copied and pasted from pygame rpg tutorial #6 description
+        self.up_animations = [self.game.character_spritesheet.get_sprite(3, 34, self.width, self.height),
+                         self.game.character_spritesheet.get_sprite(35, 34, self.width, self.height),
+                         self.game.character_spritesheet.get_sprite(68, 34, self.width, self.height)]
+
+        self.left_animations = [self.game.character_spritesheet.get_sprite(3, 98, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(35, 98, self.width, self.height),
+                           self.game.character_spritesheet.get_sprite(68, 98, self.width, self.height)]
+
+        self.right_animations = [self.game.character_spritesheet.get_sprite(3, 66, self.width, self.height),
+                            self.game.character_spritesheet.get_sprite(35, 66, self.width, self.height),
+                            self.game.character_spritesheet.get_sprite(68, 66, self.width, self.height)]
+
         # image_to_load = pygame.image.load("img/single2.png")
         # self.image = pygame.Surface([self.width, self.height]) # get an image that can later be drawn to the screen
         # self.image.set_colorkey(BLACK) # makes the specified color transparent
@@ -94,38 +113,36 @@ class Player(pygame.sprite.Sprite): # Layer 3
             if hits:
                 if self.x_change > 0: # hits[0] is the wall we're colliding with
                     self.rect.x = hits[0].rect.left - self.rect.width # because we takeaway the width of the rectangle, this creates the collision effect so the player cant walk on top the bock
-                if self.x_change < 0:
-                    self.rect.x = hits[0].rect.right
+                    
+                    #When a collision is detected and the player's position is corrected, the code moves all sprites back by PLAYER_SPEED
+                    # So basically the camera moves twice within the 1 frame, if running into a wall right, all sprites still move right, but this fix moves the sprite to the left after that happens, so when its drawn to the screen its just stationary
+                    #  since the player isnt actually moving beyond the wall
+                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                        sprite.rect.x += PLAYER_SPEED
 
+                if self.x_change < 0:
+                    self.rect.x = hits[0].rect.right                   
+                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                        sprite.rect.x -= PLAYER_SPEED
 
         if direction == 'y':
             hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
             if hits:
                 if self.y_change > 0:
                     self.rect.y = hits[0].rect.top - self.rect.height
+                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                        sprite.rect.y += PLAYER_SPEED
                 if self.y_change < 0:
                     self.rect.y = hits[0].rect.bottom
+                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                        sprite.rect.y -= PLAYER_SPEED
     def animate(self):
-        down_animations = [self.game.character_spritesheet.get_sprite(3, 2, self.width, self.height),
-                           self.game.character_spritesheet.get_sprite(35, 2, self.width, self.height),
-                           self.game.character_spritesheet.get_sprite(68, 2, self.width, self.height)]
-        # copied and pasted from pygame rpg tutorial #6 description
-        up_animations = [self.game.character_spritesheet.get_sprite(3, 34, self.width, self.height),
-                         self.game.character_spritesheet.get_sprite(35, 34, self.width, self.height),
-                         self.game.character_spritesheet.get_sprite(68, 34, self.width, self.height)]
-
-        left_animations = [self.game.character_spritesheet.get_sprite(3, 98, self.width, self.height),
-                           self.game.character_spritesheet.get_sprite(35, 98, self.width, self.height),
-                           self.game.character_spritesheet.get_sprite(68, 98, self.width, self.height)]
-
-        right_animations = [self.game.character_spritesheet.get_sprite(3, 66, self.width, self.height),
-                            self.game.character_spritesheet.get_sprite(35, 66, self.width, self.height),
-                            self.game.character_spritesheet.get_sprite(68, 66, self.width, self.height)]
+        
         if self.facing == "down":
             if self.y_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.character_spritesheet.get_sprite(3,2, self.width, self.height)
             else: # if we are currently moving
-                    self.image = down_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.down_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -133,7 +150,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
             if self.y_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.character_spritesheet.get_sprite(3,34, self.width, self.height)
             else: # if we are currently moving
-                    self.image = up_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.up_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -141,7 +158,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
             if self.x_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.character_spritesheet.get_sprite(3,98, self.width, self.height)
             else: # if we are currently moving
-                    self.image = left_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.left_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -149,7 +166,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
             if self.x_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.character_spritesheet.get_sprite(3,66, self.width, self.height)
             else: # if we are currently moving
-                    self.image = right_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.right_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -176,6 +193,22 @@ class Enemy(pygame.sprite.Sprite):
         self.movement_loop = 0
         self.max_travel = random.randint(7, 30) # moving randomly between 7 and 30 pixels
 
+
+        self.down_animations = [self.game.enemy_spritesheet.get_sprite(3, 2, self.width, self.height),
+                           self.game.enemy_spritesheet.get_sprite(35, 2, self.width, self.height),
+                           self.game.enemy_spritesheet.get_sprite(68, 2, self.width, self.height)]
+        # copied and pasted from pygame rpg tutorial #6 description
+        self.up_animations = [self.game.enemy_spritesheet.get_sprite(3, 34, self.width, self.height),
+                         self.game.enemy_spritesheet.get_sprite(35, 34, self.width, self.height),
+                         self.game.enemy_spritesheet.get_sprite(68, 34, self.width, self.height)]
+
+        self.left_animations = [self.game.enemy_spritesheet.get_sprite(3, 98, self.width, self.height),
+                           self.game.enemy_spritesheet.get_sprite(35, 98, self.width, self.height),
+                           self.game.enemy_spritesheet.get_sprite(68, 98, self.width, self.height)]
+
+        self.right_animations = [self.game.enemy_spritesheet.get_sprite(3, 66, self.width, self.height),
+                            self.game.enemy_spritesheet.get_sprite(35, 66, self.width, self.height),
+                            self.game.enemy_spritesheet.get_sprite(68, 66, self.width, self.height)]
 
         self.image = self.game.enemy_spritesheet.get_sprite(3, 2, self.width, self.height)
         self.image.set_colorkey(BLACK) # remove background of image
@@ -207,26 +240,12 @@ class Enemy(pygame.sprite.Sprite):
                 self.facing = 'left'
 
     def animate(self):
-        down_animations = [self.game.enemy_spritesheet.get_sprite(3, 2, self.width, self.height),
-                           self.game.enemy_spritesheet.get_sprite(35, 2, self.width, self.height),
-                           self.game.enemy_spritesheet.get_sprite(68, 2, self.width, self.height)]
-        # copied and pasted from pygame rpg tutorial #6 description
-        up_animations = [self.game.enemy_spritesheet.get_sprite(3, 34, self.width, self.height),
-                         self.game.enemy_spritesheet.get_sprite(35, 34, self.width, self.height),
-                         self.game.enemy_spritesheet.get_sprite(68, 34, self.width, self.height)]
-
-        left_animations = [self.game.enemy_spritesheet.get_sprite(3, 98, self.width, self.height),
-                           self.game.enemy_spritesheet.get_sprite(35, 98, self.width, self.height),
-                           self.game.enemy_spritesheet.get_sprite(68, 98, self.width, self.height)]
-
-        right_animations = [self.game.enemy_spritesheet.get_sprite(3, 66, self.width, self.height),
-                            self.game.enemy_spritesheet.get_sprite(35, 66, self.width, self.height),
-                            self.game.enemy_spritesheet.get_sprite(68, 66, self.width, self.height)]
+        
         if self.facing == "down":
             if self.y_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.enemy_spritesheet.get_sprite(3,2, self.width, self.height)
             else: # if we are currently moving
-                    self.image = down_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.down_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -234,7 +253,7 @@ class Enemy(pygame.sprite.Sprite):
             if self.y_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.enemy_spritesheet.get_sprite(3,34, self.width, self.height)
             else: # if we are currently moving
-                    self.image = up_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.up_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -242,7 +261,7 @@ class Enemy(pygame.sprite.Sprite):
             if self.x_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.enemy_spritesheet.get_sprite(3,98, self.width, self.height)
             else: # if we are currently moving
-                    self.image = left_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.left_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -250,7 +269,7 @@ class Enemy(pygame.sprite.Sprite):
             if self.x_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.enemy_spritesheet.get_sprite(3,66, self.width, self.height)
             else: # if we are currently moving
-                    self.image = right_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
+                    self.image = self.right_animations[math.floor(self.animation_loop)] # pull animation from down_animations list
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
@@ -363,6 +382,31 @@ class Attack(pygame.sprite.Sprite): # inhertis from pygame.sprite.Sprite
 
         self.image = self.game.attack_spritesheet.get_sprite(0, 0, self.width, self.height)
 
+        # Copy and pasted animation code. These are lists containing the animation cutouts from the attack spritesheet
+        self.right_animations = [self.game.attack_spritesheet.get_sprite(0, 64, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(32, 64, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(64, 64, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(96, 64, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(128, 64, self.width, self.height)]
+
+        self.down_animations = [self.game.attack_spritesheet.get_sprite(0, 32, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(32, 32, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(64, 32, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(96, 32, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(128, 32, self.width, self.height)]
+
+        self.left_animations = [self.game.attack_spritesheet.get_sprite(0, 96, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(32, 96, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(64, 96, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(96, 96, self.width, self.height),
+                           self.game.attack_spritesheet.get_sprite(128, 96, self.width, self.height)]
+
+        self.up_animations = [self.game.attack_spritesheet.get_sprite(0, 0, self.width, self.height),
+                         self.game.attack_spritesheet.get_sprite(32, 0, self.width, self.height),
+                         self.game.attack_spritesheet.get_sprite(64, 0, self.width, self.height),
+                         self.game.attack_spritesheet.get_sprite(96, 0, self.width, self.height),
+                         self.game.attack_spritesheet.get_sprite(128, 0, self.width, self.height)]
+
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
@@ -377,51 +421,28 @@ class Attack(pygame.sprite.Sprite): # inhertis from pygame.sprite.Sprite
     def animate(self):
         direction = self.game.player.facing # This variable holds the direction we're facing. we declared it earlier in __init__
 
-        # Copy and pasted animation code. These are lists containing the animation cutouts from the attack spritesheet
-        right_animations = [self.game.attack_spritesheet.get_sprite(0, 64, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(32, 64, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(64, 64, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(96, 64, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(128, 64, self.width, self.height)]
-
-        down_animations = [self.game.attack_spritesheet.get_sprite(0, 32, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(32, 32, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(64, 32, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(96, 32, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(128, 32, self.width, self.height)]
-
-        left_animations = [self.game.attack_spritesheet.get_sprite(0, 96, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(32, 96, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(64, 96, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(96, 96, self.width, self.height),
-                           self.game.attack_spritesheet.get_sprite(128, 96, self.width, self.height)]
-
-        up_animations = [self.game.attack_spritesheet.get_sprite(0, 0, self.width, self.height),
-                         self.game.attack_spritesheet.get_sprite(32, 0, self.width, self.height),
-                         self.game.attack_spritesheet.get_sprite(64, 0, self.width, self.height),
-                         self.game.attack_spritesheet.get_sprite(96, 0, self.width, self.height),
-                         self.game.attack_spritesheet.get_sprite(128, 0, self.width, self.height)]
+        
 
         if direction == 'up':
-            self.image = up_animations[math.floor(self.animation_loop)]
+            self.image = self.up_animations[math.floor(self.animation_loop)]
             self.animation_loop += 0.5 # every 2 frames is a new image from the animation
             if self.animation_loop >= 5: # we have 5 animations in our list. once the animations conclude we kill the sprite so it doesnt show anymore
                 self.kill()
 
         if direction == 'down':
-            self.image = down_animations[math.floor(self.animation_loop)]
+            self.image = self.down_animations[math.floor(self.animation_loop)]
             self.animation_loop += 0.5 # every 2 frames is a new image from the animation
             if self.animation_loop >= 5: # we have 5 animations in our list. once the animations conclude we kill the sprite so it doesnt show anymore
                 self.kill()
 
         if direction == 'left':
-            self.image = left_animations[math.floor(self.animation_loop)]
+            self.image = self.left_animations[math.floor(self.animation_loop)]
             self.animation_loop += 0.5 # every 2 frames is a new image from the animation
             if self.animation_loop >= 5: # we have 5 animations in our list. once the animations conclude we kill the sprite so it doesnt show anymore
                 self.kill()
 
         if direction == 'right':
-            self.image = right_animations[math.floor(self.animation_loop)]
+            self.image = self.right_animations[math.floor(self.animation_loop)]
             self.animation_loop += 0.5 # every 2 frames is a new image from the animation
             if self.animation_loop >= 5: # we have 5 animations in our list. once the animations conclude we kill the sprite so it doesnt show anymore
                 self.kill()
