@@ -27,8 +27,10 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.character_spritesheet= Spritesheet('img/character.png')
         self.terrain_spritesheet = Spritesheet('img/terrain.png')
         self.enemy_spritesheet = Spritesheet('img/enemy.png')
+        self.attack_spritesheet = Spritesheet('img/attack.png')
         self.intro_background = pygame.image.load('./img/introbackground.png')
         self.game_over_background = pygame.image.load('./img/gameover.png')
+        
 # CD Codes game loop that just displays text to the screen
 #     def game_loop(self):
 #         while self.playing: # while player is playing
@@ -82,7 +84,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 if column == 'B':
                     Block(self, j, i) # x, y. Creates a block at this position
                 if column == 'P':
-                    Player(self, j, i) # j is the column (x) and i is the row (y)
+                    self.player = Player(self, j, i) # j is the column (x) and i is the row (y)
                 if column == 'E':
                     Enemy(self, j, i) # pass in game object (self) and coordinates
                 if column == 'N':
@@ -108,8 +110,18 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 self.playing = False
                 self.running = False
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE: #  if player presses space bar
+                    if self.player.facing == 'up':
+                        Attack(self, self.player.rect.x, self.player.rect.y - TILESIZE) # makes it so that the animation doesnt appear direectly on top the player
+                    if self.player.facing == 'down':
+                        Attack(self, self.player.rect.x, self.player.rect.y + TILESIZE)
+                    if self.player.facing == 'left':
+                        Attack(self, self.player.rect.x - TILESIZE, self.player.rect.y)
+                    if self.player.facing == 'right':
+                        Attack(self, self.player.rect.x + TILESIZE, self.player.rect.y )
     def update(self):
-        self.all_sprites.update() # calls the update function on all_sprites in sprites.py
+        self.all_sprites.update() # calls the update function on all_sprites in sprites.py # this is the line that updates the screen each frame. it calls each sprite's respective update function
     def draw(self):
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen) # All_sprites group, draw will look through all sprites in all_sprites, finds the image and the rectangle and draws it to the window
@@ -134,7 +146,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
             sprite.kill()
 
         while self.running:
-            for event in pygame.event.get():
+            for event in pygame.event.get(): # runs every frame
                 if event.type == pygame.QUIT:
                     self.running = False
 
