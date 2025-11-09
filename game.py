@@ -88,7 +88,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 if column == 'E':
                     Enemy(self, j, i) # pass in game object (self) and coordinates
                 if column == 'N':
-                    NPC(self, j, i) # pass in game object (self) and coordinates
+                    NPC(self, j, i, "I want yo dick in my ahh") # pass in game object (self) and coordinates
      
     def new(self):
         
@@ -98,7 +98,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
         self.npcs = pygame.sprite.LayeredUpdates() # add non playable characters to the all_sprites group
-
+        self.dialogue_box = None # dialogue box that will be displayed when an NPC is talked to
         # self.player = Player(self, 1, 2)
         self.createTilemap()
         
@@ -122,9 +122,24 @@ class Game(): # Contains our info and variables related to the game, user inputs
                         Attack(self, self.player.rect.x + TILESIZE, self.player.rect.y )
     def update(self):
         self.all_sprites.update() # calls the update function on all_sprites in sprites.py # this is the line that updates the screen each frame. it calls each sprite's respective update function
+        # Clear dialogue box if player moved away from all NPCs
+        if self.dialogue_box:
+            player_near_any_npc = False
+            for npc in self.npcs:
+                detection_rect = npc.rect.inflate(TILESIZE, TILESIZE)
+                if detection_rect.colliderect(self.player.rect):
+                    player_near_any_npc = True
+                    break
+            if not player_near_any_npc:
+                self.dialogue_box = None
+    
     def draw(self):
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen) # All_sprites group, draw will look through all sprites in all_sprites, finds the image and the rectangle and draws it to the window
+        # Draw dialogue box if it exists
+        if hasattr(self, 'dialogue_box') and self.dialogue_box: # if the sprite has a dialogue_box attribute and it exists (only npcs being talked towill have this)
+            self.screen.blit(self.dialogue_box.image, self.dialogue_box.rect) # draw the dialogue box to the screen
+        
         self.clock.tick(FPS) # 1 tick per frame, 60 FPS
         pygame.display.update()
     def main(self):

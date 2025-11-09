@@ -69,9 +69,11 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.collide_enemy()
 
         self.rect.x += self.x_change # once we see a change in position due to movement
-        self.collide_blocks('x') # we can check for collision
+        self.collide_blocks('x', self.game.blocks) # we can check for collision
+        self.collide_blocks('x', self.game.npcs)
         self.rect.y += self.y_change # change is a temporary variable of sorts and we use it to update the actual rectangle that refers to the player
-        self.collide_blocks('y')
+        self.collide_blocks('y', self.game.blocks)
+        self.collide_blocks('y', self.game.npcs)
 
         self.x_change = 0
         self.y_change = 0
@@ -79,22 +81,22 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
     def movement(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]: # if left arrow key pressed
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]: # if left arrow key pressed
             for sprite in self.game.all_sprites:
                 sprite.rect.x += PLAYER_SPEED # moving all sprites (except the player) to the right to give the illusion the camera is moving
             self.x_change -= PLAYER_SPEED # reduce the x axis to move the player left
             self.facing = 'left'
-        if keys[pygame.K_RIGHT]: # if left arrow key pressed
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]: # if left arrow key pressed
             for sprite in self.game.all_sprites:
                 sprite.rect.x -= PLAYER_SPEED
             self.x_change += PLAYER_SPEED # reduce the x axis to move the player left
             self.facing = 'right'
-        if keys[pygame.K_UP]: # if left arrow key pressed
+        if keys[pygame.K_UP] or keys[pygame.K_w]: # if left arrow key pressed
             for sprite in self.game.all_sprites:
                 sprite.rect.y += PLAYER_SPEED
             self.y_change -= PLAYER_SPEED # reduce the y axis to move the player up
             self.facing = 'up'
-        if keys[pygame.K_DOWN]: # if left arrow key pressed
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]: # if left arrow key pressed
             for sprite in self.game.all_sprites:
                 sprite.rect.y -= PLAYER_SPEED
             self.y_change += PLAYER_SPEED # increase the y axis to move the player down
@@ -106,9 +108,9 @@ class Player(pygame.sprite.Sprite): # Layer 3
             self.kill() # remove player from allsprites group
             self.game.playing = False # exits the game
 
-    def collide_blocks(self, direction):
+    def collide_blocks(self, direction, sprite_group):
         if direction == 'x':
-            hits = pygame.sprite.spritecollide(self, self.game.blocks, False) # function from sprite library, checks if the rect of one sprite intersects with the rect of another sprite
+            hits = pygame.sprite.spritecollide(self, sprite_group, False) # function from sprite library, checks if the rect of one sprite intersects with the rect of another sprite
             # Third parameter (one marked false) asks if you want to delete the sprite when it has a collision
             if hits:
                 if self.x_change > 0: # hits[0] is the wall we're colliding with
@@ -126,7 +128,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
                         sprite.rect.x -= PLAYER_SPEED
 
         if direction == 'y':
-            hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
+            hits = pygame.sprite.spritecollide(self, sprite_group, False)
             if hits:
                 if self.y_change > 0:
                     self.rect.y = hits[0].rect.top - self.rect.height
@@ -136,6 +138,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
                     self.rect.y = hits[0].rect.bottom
                     for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
                         sprite.rect.y -= PLAYER_SPEED
+    
     def animate(self):
         
         if self.facing == "down":
@@ -276,11 +279,12 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, dialogue): # x coor, y coor, list of strings 
+        self.dialogue = dialogue
         self.game = game
         self._layer = NPC_LAYER
         self.groups = self.game.all_sprites, self.game.npcs
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        pygame.sprite.Sprite.__init__(self, self.groups) #  officially makes it a sprite in the all_sprites group
 
         self.x = x * TILESIZE # Every sprite needs an image and rectangle
         self.y = y * TILESIZE
@@ -294,6 +298,20 @@ class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module
         self.rect.x = self.x
         self.rect.y = self.y
 
+    def update_dialogue(self, str):
+        self.dialogue = str
+
+    def update(self):
+        self.draw_textbox(self.dialogue) # call dialogue function and pass in dialogue text
+
+    def draw_textbox(self, dialogue):
+        # Inflate NPC's rect slightly to create a "detection zone" # inflate() does not modify the original rect. It returns a new rect.
+        detection_rect = self.rect.inflate(TILESIZE, TILESIZE)  # Makes rect bigger by 1 tile in each direction
+        
+        if detection_rect.colliderect(self.game.player.rect): # detects if this new inflated rectangle and player's rectangle hitbox intersect
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_e]:
+                self.game.dialogue_box = Button(10, WIN_HEIGHT - 100, WIN_WIDTH - 40, 85, WHITE, (1,1,1,0.5), dialogue, 15)
 
 class Block(pygame.sprite.Sprite): # Layer 2
     def __init__(self, game, x, y): # game object and position on the tilemap
@@ -416,7 +434,12 @@ class Attack(pygame.sprite.Sprite): # inhertis from pygame.sprite.Sprite
         self.collide()
 
     def collide(self):
-        hits = pygame.sprite.spritecollide(self, self.game.enemies, True) # Checking for collision between the attack animation and the enemy
+        hits = pygame.sprite.spritecollide(self, self.game.enemies, True) # Checking for collision between the attack animation and the enemy and stores the enemy hit in hits
+        if hits:
+            for enemy in hits:
+                print(f"Hit enemy at position: ({enemy.rect.x}, {enemy.rect.y})")
+                # You could access enemy.rect, enemy.image, enemy.facing, etc.
+    
     
     def animate(self):
         direction = self.game.player.facing # This variable holds the direction we're facing. we declared it earlier in __init__
