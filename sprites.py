@@ -32,6 +32,7 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.facing = 'down'
         self.animation_loop = 1
 
+
         # if we put the animations in the __init__ and add "self" to them we can call them any time insted of having them be in the animate function
         # meaning we'd need to pull the animations every time the animate function runs, which is inefficient
         # having them in __init__ already, readily accessible, is more efficient
@@ -62,6 +63,8 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.rect = self.image.get_rect() # set self.rect to be same size of the player
         self.rect.x = self.x
         self.rect.y = self.y
+
+        self.inBattle = 0
 
     def update(self):
         self.movement()
@@ -105,8 +108,13 @@ class Player(pygame.sprite.Sprite): # Layer 3
     def collide_enemy(self):
         hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
         if hits:
-            self.kill() # remove player from allsprites group
-            self.game.playing = False # exits the game
+            self.inBattle = 1 # Put player in battle screen
+            self.game.battle_enemy = hits[0]  # Store the specific enemy sprite object that was hit
+            #self.kill() # remove player from allsprites group
+            #self.game.playing = False # exits the game
+
+            
+        
 
     def collide_blocks(self, direction, sprite_group):
         if direction == 'x':
@@ -176,6 +184,9 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
 
 class Enemy(pygame.sprite.Sprite):
+
+    battle_sprite = None # will hold the string that will lead to the image of the battle sprite
+
     def __init__(self, game, x ,y):
 
         self.game = game
@@ -196,6 +207,7 @@ class Enemy(pygame.sprite.Sprite):
         self.movement_loop = 0
         self.max_travel = random.randint(7, 30) # moving randomly between 7 and 30 pixels
 
+        
 
         self.down_animations = [self.game.enemy_spritesheet.get_sprite(3, 2, self.width, self.height),
                            self.game.enemy_spritesheet.get_sprite(35, 2, self.width, self.height),
@@ -219,6 +231,8 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect() # rectangle that holds the enemy's position. self.all_sprites.draw(self.screen) uses this to draw it to the screen at the right position.
         self.rect.x = self.x
         self.rect.y = self.y
+
+        
     
     def update(self):
         self.movement()
@@ -276,6 +290,20 @@ class Enemy(pygame.sprite.Sprite):
                     self.animation_loop += 0.1 # every 10 frames the animation will change (0.1 * 10 = 1), animations are in indexes 0, 1 and 2
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
+
+class Johnluke(Enemy):
+    battle_sprite = pygame.image.load('img/jl.PNG')
+    orig_w, orig_h = battle_sprite.get_size()
+    scale = 0.5  # 50% size
+
+    new_w = int(orig_w * scale)
+    new_h = int(orig_h * scale)
+
+    battle_sprite = pygame.transform.smoothscale(battle_sprite, (new_w, new_h))
+
+    def __init__(self, game, x ,y):
+        super().__init__(game, x, y) # Run parent init function
+        
 
 
 class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module

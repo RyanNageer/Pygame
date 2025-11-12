@@ -3,6 +3,8 @@ from menu import * # now we have access to the MainMenu class
 from sprites import *
 from config import *
 
+
+
 class Game(): # Contains our info and variables related to the game, user inputs, game loop, drawing stuff to the screen,
     def __init__(self):
         pygame.init()
@@ -30,6 +32,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.attack_spritesheet = Spritesheet('img/attack.png')
         self.intro_background = pygame.image.load('./img/introbackground.png')
         self.game_over_background = pygame.image.load('./img/gameover.png')
+        self.battle_background = pygame.image.load('./img/battle_background.jpg')
         
 # CD Codes game loop that just displays text to the screen
 #     def game_loop(self):
@@ -86,7 +89,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 if column == 'P':
                     self.player = Player(self, j, i) # j is the column (x) and i is the row (y)
                 if column == 'E':
-                    Enemy(self, j, i) # pass in game object (self) and coordinates
+                    Johnluke(self, j, i) # pass in game object (self) and coordinates
                 if column == 'N':
                     NPC(self, j, i, "I want yo dick in my ahh") # pass in game object (self) and coordinates
      
@@ -120,6 +123,31 @@ class Game(): # Contains our info and variables related to the game, user inputs
                         Attack(self, self.player.rect.x - TILESIZE, self.player.rect.y)
                     if self.player.facing == 'right':
                         Attack(self, self.player.rect.x + TILESIZE, self.player.rect.y )
+
+            if self.player.inBattle == 1:
+                self.battle(self.battle_enemy) # Get the enemy touched from the battle_enemy which was taken from the hits[] list
+
+    def battle(self, enemy):
+        self.playing = 0 # Exit overworld and enter battle screen
+        while self.player.inBattle:
+            for event in pygame.event.get(): # Get inputs from player every frame
+                if event.type == pygame.QUIT:
+                    self.playing = False
+                    self.running = False
+                    return
+                if event.type == pygame.KEYDOWN: # Check for keystrokes
+                    if event.key == pygame.K_ESCAPE:
+                        self.player.inBattle = 0
+                        self.playing = 1
+                        enemy.kill()
+                        break
+            
+            self.screen.blit(self.intro_background, (0,0)) # Draw background image
+            self.screen.blit(enemy.battle_sprite, (240, 120))
+            self.clock.tick(FPS) # 
+            pygame.display.update() 
+            
+
     def update(self):
         self.all_sprites.update() # calls the update function on all_sprites in sprites.py # this is the line that updates the screen each frame. it calls each sprite's respective update function
         # Clear dialogue box if player moved away from all NPCs
@@ -148,6 +176,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
             self.events()
             self.update()
             self.draw()
+
         self.game_over()
         # self.running = False
 
