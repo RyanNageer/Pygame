@@ -303,7 +303,49 @@ class Johnluke(Enemy):
 
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
+
+class dialogue_box():
+    def __init__(self, game, font):
+        self.game = game
+        self.font = font
+        self.WIDTH = WIN_WIDTH - 40
+        self.HEIGHT = 85
+        self.x = 10
+        self.y = WIN_HEIGHT - 100
         
+        # Create the box surface
+        self.box_surf = pygame.Surface((self.WIDTH, self.HEIGHT))
+        self.box_surf.fill(WHITE)  # Background color
+        
+        # Create rect for positioning
+        self.box_rect = pygame.Rect(self.x, self.y, self.WIDTH, self.HEIGHT)
+        
+        self.text = ""
+        self.visible = False
+    
+    def set_text(self, text):
+        """Update the dialogue text"""
+        self.text = text
+        self.visible = True
+        
+        # Re-render the box with new text
+        self.box_surf.fill(WHITE)  # Clear and fill background
+        
+        # Render text
+        text_surf = self.font.render(self.text, True, BLACK)
+        text_rect = text_surf.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
+        
+        # Blit text onto box surface
+        self.box_surf.blit(text_surf, text_rect)
+    
+    def hide(self):
+        """Hide the dialogue box"""
+        self.visible = False
+    
+    def draw(self, screen):
+        """Draw the dialogue box to the screen"""
+        if self.visible:
+            screen.blit(self.box_surf, self.box_rect)
 
 
 class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module
@@ -332,14 +374,18 @@ class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module
     def update(self):
         self.draw_textbox(self.dialogue) # call dialogue function and pass in dialogue text
 
-    def draw_textbox(self, dialogue):
-        # Inflate NPC's rect slightly to create a "detection zone" # inflate() does not modify the original rect. It returns a new rect.
-        detection_rect = self.rect.inflate(TILESIZE, TILESIZE)  # Makes rect bigger by 1 tile in each direction
-        
-        if detection_rect.colliderect(self.game.player.rect): # detects if this new inflated rectangle and player's rectangle hitbox intersect
+    def draw_textbox(self, dialogue_text):
+        detection_rect = self.rect.inflate(TILESIZE, TILESIZE)
+        talking = 1
+        if detection_rect.colliderect(self.game.player.rect):
             keys = pygame.key.get_pressed()
             if keys[pygame.K_e]:
-                self.game.dialogue_box = Button(10, WIN_HEIGHT - 100, WIN_WIDTH - 40, 85, WHITE, (1,1,1,0.5), dialogue, 15)
+                # Show dialogue box with this NPC's dialogue
+                self.game.dialogue_box.set_text(dialogue_text)
+            else:
+                # Hide dialogue box when player moves away
+                self.game.dialogue_box.hide()
+
 
 class Block(pygame.sprite.Sprite): # Layer 2
     def __init__(self, game, x, y): # game object and position on the tilemap
@@ -381,8 +427,9 @@ class Ground(pygame.sprite.Sprite): # Layer 1
         self.rect.y = self.y
 
 class Button:
-    def __init__(self, x , y, width, height, fg, bg, content, fontsize): # coords, size, foreground color, background color, text, and fontsize
-        self.font = pygame.font.Font('8-BIT WONDER.TTF', fontsize)
+                    # coords, width, height, foreground color, background color, text, and fontsize
+    def __init__(self, x , y, width, height, fg, bg, content, fontsize): 
+        self.font = pygame.font.Font('8-BIT WONDER.TTF', fontsize) # set font
         self.content = content
 
         self.x = x
@@ -394,12 +441,10 @@ class Button:
         self.bg = bg
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill(self.bg)
-        self.rect = self.image.get_rect() # Hitbox of the button
+        self.rect = self.image.get_rect() # Hitbox of the button, get a rectangle
         
         self.rect.x = self.x
         self.rect.y = self.y
-
-        self.text = self.font.render # Rendering the font variable
 
         self.text = self.font.render(self.content, True, self.fg) # Rendering the text
         self.text_rect = self.text.get_rect(center = (self.width/2, self.height/2))

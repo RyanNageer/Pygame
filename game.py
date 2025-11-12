@@ -25,6 +25,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.screen = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(self.font_name)
+        self.dialogue_box = dialogue_box(self, self.font)  # Create dialogue_box object
 
         self.character_spritesheet= Spritesheet('img/character.png')
         self.terrain_spritesheet = Spritesheet('img/terrain.png')
@@ -101,8 +102,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
         self.npcs = pygame.sprite.LayeredUpdates() # add non playable characters to the all_sprites group
-        self.dialogue_box = None # dialogue box that will be displayed when an NPC is talked to
         # self.player = Player(self, 1, 2)
+        self.dialogue_box = dialogue_box(self, self.font)
         self.createTilemap()
         
 
@@ -145,29 +146,19 @@ class Game(): # Contains our info and variables related to the game, user inputs
             self.screen.blit(self.intro_background, (0,0)) # Draw background image
             self.screen.blit(enemy.battle_sprite, (240, 120))
             self.clock.tick(FPS) # 
-            pygame.display.update() 
+            pygame.display.update() # physically puts this on the monitor/computer screen
             
 
     def update(self):
         self.all_sprites.update() # calls the update function on all_sprites in sprites.py # this is the line that updates the screen each frame. it calls each sprite's respective update function
-        # Clear dialogue box if player moved away from all NPCs
-        if self.dialogue_box:
-            player_near_any_npc = False
-            for npc in self.npcs:
-                detection_rect = npc.rect.inflate(TILESIZE, TILESIZE)
-                if detection_rect.colliderect(self.player.rect):
-                    player_near_any_npc = True
-                    break
-            if not player_near_any_npc:
-                self.dialogue_box = None
+        
     
     def draw(self):
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen) # All_sprites group, draw will look through all sprites in all_sprites, finds the image and the rectangle and draws it to the window
         # Draw dialogue box if it exists
-        if hasattr(self, 'dialogue_box') and self.dialogue_box: # if the sprite has a dialogue_box attribute and it exists (only npcs being talked towill have this)
-            self.screen.blit(self.dialogue_box.image, self.dialogue_box.rect) # draw the dialogue box to the screen
-        
+        if hasattr(self, 'dialogue_box'):
+            self.dialogue_box.draw(self.screen)
         self.clock.tick(FPS) # 1 tick per frame, 60 FPS
         pygame.display.update()
     def main(self):
@@ -183,7 +174,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
     def game_over(self):
         text = self.font.render('Game Over', True, WHITE) # self.font is '8-BIT WONDER.TTF'
         text_rect = text.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT/2))
-
+                             # coords, width, height, foreground color, background color, text, and fontsize
         restart_button = Button(10, WIN_HEIGHT - 60, 150, 50, WHITE, BLACK, 'Restart', 20)
 
         for sprite in self.all_sprites: # remove sprites from screen since game ended
