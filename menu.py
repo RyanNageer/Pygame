@@ -1,4 +1,6 @@
 import pygame
+import config
+
 # menu class from CD Codes
 class Menu():
     def __init__(self, game): #reference to ourself and to a game object. for clarity python doesnt enforce types automatically so "game" here could techincally be any data type or object type, but we are gonna pass in a Game object.
@@ -8,8 +10,10 @@ class Menu():
         self.cursor_rect = pygame.Rect(0, 0, 20, 20) # we create a rectangle to act as our cursor. its 20x20 pixels
         self.offset = -100 # offset by -100 shift the cursor horizontally so it appears to the left of the text instead of directly on top of it
     
-    def draw_cursor(self):
-        self.game.draw_text('*', 15, self.cursor_rect.x, self.cursor_rect.y) # defined in the game class
+    def draw_cursor(self, surface=None):
+        if surface is None:
+            surface = self.game.display
+        self.game.draw_text('*', 15, self.cursor_rect.x, self.cursor_rect.y, surface=surface) # defined in the game class
 
     def blit_screen(self):
         self.game.window.blit(self.game.display, (0,0)) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
@@ -128,3 +132,80 @@ class CreditsMenu(Menu): # child of Menu
             self.game.draw_text('Credits', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20) # draw_text function we made in the game class
             self.game.draw_text('Ryan Nageer', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 10)
             self.blit_screen() # display shit to screen and set inputs back to false every frame
+
+class BattleMenu(Menu):
+    def __init__(self, game):
+        Menu.__init__(self,game)
+        # Use integer dimensions for the surface
+        self.battle_display = pygame.Surface((self.game.DISPLAY_W, self.game.DISPLAY_H)) # Canvas(dimensions)
+        self.state = "Attack"
+        self.attackx, self.attacky = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 220 # Aligning where on the screen we want to place our "start game" text
+        self.itemx, self.itemy = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 180 # Aligning options below the "start game"
+        self.talkx, self.talky = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 140
+        self.fleex, self.fleey = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 100
+        self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky) # midpoint of the top edge of the rectangle
+        # midtop is one of the position attributes of a Pygame Rect object
+
+    def display_menu(self):
+        # Draw a single frame of the battle UI.
+        # The outer `Game.battle` loop handles the event polling and input,
+        # so this method should only render and return each frame.
+        
+        self.battle_display.fill(self.game.BLACK)
+        # Draw text directly onto the battle surface so it will be visible
+        self.game.draw_text('Attack', 20, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
+        self.game.draw_text('Item', 20, self.itemx, self.itemy, surface=self.battle_display)
+        self.game.draw_text('Talk', 20, self.talkx, self.talky, surface=self.battle_display)
+        self.game.draw_text('Flee', 20, self.fleex, self.fleey, surface=self.battle_display)
+        self.draw_cursor(surface=self.battle_display)
+        self.blit_battle_menu()
+
+    def blit_battle_menu(self):
+        self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 60))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
+        # Copy the pixels from self.game.display (the off-screen canvas) onto self.game.window (the visible screen), starting at coordinates (0, 0)
+        pygame.display.update()
+        self.game.reset_keys() # reset inputs to false
+
+    def move_cursor(self, key): # the menu from Top to bottom will be Start Game, Options, Credits
+        if key == pygame.K_DOWN:
+            if self.state == 'Attack': # if cursor is at start and we receive an input to move the cursor down, we  must adjust the cursor to move down to options
+                self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy) # midtop is a variable from our MainMenu class
+                self.state = 'Item'
+            elif self.state == 'Item':
+                self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
+                self.state = 'Talk'
+            elif self.state == 'Talk':
+                self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey)
+                self.state = 'Flee'
+            elif self.state == 'Flee':
+                self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
+                self.state = 'Attack'
+        
+        if key == pygame.K_UP:
+            if self.state == 'Attack': 
+                self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey) # midtop is a variable from our MainMenu class
+                self.state = 'Flee'
+            elif self.state == 'Item':
+                self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
+                self.state = 'Attack'
+            elif self.state == 'Talk':
+                self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy)
+                self.state = 'Item'
+            elif self.state == 'Flee':
+                self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
+                self.state = 'Talk'
+
+    def check_input(self, key):
+        self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
+        if key == pygame.K_RETURN: # If the player clicks Enter
+            if self.state == 'Attack':     
+                print("Player Attacks!")
+            elif self.state == 'Item':
+                print("You don't have any items")
+            elif self.state == 'Talk':
+               print("The enemy doesn't seem to be very talkative")
+            elif self.state == 'Flee':
+                print("Unable to flee!")
+            else:
+                print ("ERROR: State self.malfunctioned")
+            

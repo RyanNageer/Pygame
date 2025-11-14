@@ -66,17 +66,25 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
         self.inBattle = 0
 
+        LVL = 1
+        MAX_HP = 20
+        CUR_HP = 20
+        ATK = 2
+        
+
     def update(self):
-        self.movement()
+        if not self.game.dialogue_active:
+            self.movement()
         self.animate()
         self.collide_enemy()
 
-        self.rect.x += self.x_change # once we see a change in position due to movement
-        self.collide_blocks('x', self.game.blocks) # we can check for collision
-        self.collide_blocks('x', self.game.npcs)
-        self.rect.y += self.y_change # change is a temporary variable of sorts and we use it to update the actual rectangle that refers to the player
-        self.collide_blocks('y', self.game.blocks)
-        self.collide_blocks('y', self.game.npcs)
+        if not self.game.dialogue_active:  # Only update position if dialogue not active
+            self.rect.x += self.x_change # once we see a change in position due to movement
+            self.collide_blocks('x', self.game.blocks) # we can check for collision
+            self.collide_blocks('x', self.game.npcs)
+            self.rect.y += self.y_change # change is a temporary variable of sorts and we use it to update the actual rectangle that refers to the player
+            self.collide_blocks('y', self.game.blocks)
+            self.collide_blocks('y', self.game.npcs)
 
         self.x_change = 0
         self.y_change = 0
@@ -232,6 +240,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
+        MAX_HP = 5
+        CUR_HP = 5
+        ATK = 1
+
         
     
     def update(self):
@@ -320,23 +332,35 @@ class dialogue_box():
         # Create rect for positioning
         self.box_rect = pygame.Rect(self.x, self.y, self.WIDTH, self.HEIGHT)
         
-        self.text = ""
+        self.dialogue_list = []  # List of dialogue strings
+        self.current_index = 0
         self.visible = False
     
-    def set_text(self, text):
-        """Update the dialogue text"""
-        self.text = text
+    def start_dialogue(self, dialogue_list):
+        """Start showing dialogue from a list"""
+        self.dialogue_list = dialogue_list
+        self.current_index = 0
         self.visible = True
-        
-        # Re-render the box with new text
-        self.box_surf.fill(WHITE)  # Clear and fill background
-        
-        # Render text
-        text_surf = self.font.render(self.text, True, BLACK)
-        text_rect = text_surf.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
-        
-        # Blit text onto box surface
-        self.box_surf.blit(text_surf, text_rect)
+        self.update_text()
+    
+    def next_dialogue(self):
+        """Advance to next dialogue, return False if done"""
+        self.current_index += 1
+        if self.current_index >= len(self.dialogue_list):
+            self.hide()
+            return False  # Dialogue finished
+        self.update_text()
+        return True  # More dialogue
+    
+    def update_text(self):
+        """Update the displayed text"""
+        if self.current_index < len(self.dialogue_list):
+            self.text = self.dialogue_list[self.current_index]
+            # Re-render box
+            self.box_surf.fill(BLACK)
+            text_surf = self.font.render(self.text, True, WHITE)
+            text_rect = text_surf.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
+            self.box_surf.blit(text_surf, text_rect)
     
     def hide(self):
         """Hide the dialogue box"""
@@ -374,17 +398,10 @@ class NPC(pygame.sprite.Sprite): # inherits sprite class from sprite module
     def update(self):
         self.draw_textbox(self.dialogue) # call dialogue function and pass in dialogue text
 
-    def draw_textbox(self, dialogue_text):
-        detection_rect = self.rect.inflate(TILESIZE, TILESIZE)
-        talking = 1
-        if detection_rect.colliderect(self.game.player.rect):
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_e]:
-                # Show dialogue box with this NPC's dialogue
-                self.game.dialogue_box.set_text(dialogue_text)
-            else:
-                # Hide dialogue box when player moves away
-                self.game.dialogue_box.hide()
+    def draw_textbox(self, dialogue_list):
+        # Dialogue starting is now handled in game.events() using KEYDOWN
+        # This method can be empty or removed if not needed for other purposes
+        pass
 
 
 class Block(pygame.sprite.Sprite): # Layer 2

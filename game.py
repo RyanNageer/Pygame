@@ -19,6 +19,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.main_menu = MainMenu(self) #  create a MainMenu object called main_menu. the "self" allows game to be passed as an argument to MainMenu, giving MainMenu full access to our game's funtions and variables   
         self.options = OptionsMenu(self) # options menu object, pass in game object     
         self.credits = CreditsMenu(self) # pass in game
+        self.battlemenu = BattleMenu(self)
         self.curr_menu = self.main_menu # this allows us to swap between what menu is currently being shown to the player
 
         # ShawCode RPG Tutorial Code
@@ -71,13 +72,20 @@ class Game(): # Contains our info and variables related to the game, user inputs
     def reset_keys(self):
         self.UP_KEY, self.DOWN_KEY, self.ENTER_KEY, self.BACK_KEY, self.ESC_KEY = False, False, False, False, False
 
-    def draw_text(self, text, size, x,y): # renders a surface (text_surface) containing our text (text), get_rect() just gives you a Rect object that matches the size of the rendered text surface, then move the rectangle onto the canvas
-        font = pygame.font.Font(self.font_name, size) # Font(file_path=None, size=12)
-        text_surface = font.render(text, True, self.WHITE) # render(text, antialias, color, background=None): creates a new Surface with the specified text rendered on it. draw text on a new Surface
-        # you get a Surface object — basically an image in memory that contains your drawn text pixels.
-        text_rect = text_surface.get_rect() # text_rect is a rectangle. This doesn’t draw anything; it’s just metadata describing the position and size of the text surface. rectangle class has 4 main components, x, y, width, and height. this rectangle has the same width & height as our text surface
-        text_rect.center = (x,y) # moves the text’s center point to (x, y) coordinates on the canvas (self.display). assigns a x and y position to the center of the rectangle. so we can center the text wherever we want it to be.
-        self.display.blit(text_surface, text_rect) # blit(source, dest, area=None, special_flags=0) -> Rect # copy the pixels from text_surface onto our canvas self.display, at the position text_rect
+    def draw_text(self, text, size, x, y, surface=None):
+        """Render `text` to `surface` (defaults to `self.display`).
+
+        Added `surface` parameter so callers can draw text to any surface
+        (for example the battle UI surface) instead of always drawing to
+        the main off-screen `self.display` surface.
+        """
+        if surface is None: # default main menu surface
+            surface = self.display
+        font = pygame.font.Font(self.font_name, size)
+        text_surface = font.render(text, True, self.WHITE)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x, y)
+        surface.blit(text_surface, text_rect)
 
     # ShawCode
 
@@ -92,7 +100,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 if column == 'E':
                     Johnluke(self, j, i) # pass in game object (self) and coordinates
                 if column == 'N':
-                    NPC(self, j, i, "I want yo dick in my ahh") # pass in game object (self) and coordinates
+                    NPC(self, j, i, ["Hello!", "How are you?", "Nice to meet you!"]) # pass in game object (self) and coordinates
      
     def new(self):
         
@@ -104,6 +112,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.npcs = pygame.sprite.LayeredUpdates() # add non playable characters to the all_sprites group
         # self.player = Player(self, 1, 2)
         self.dialogue_box = dialogue_box(self, self.font)
+        self.dialogue_active = False
         self.createTilemap()
         
 
@@ -125,12 +134,34 @@ class Game(): # Contains our info and variables related to the game, user inputs
                     if self.player.facing == 'right':
                         Attack(self, self.player.rect.x + TILESIZE, self.player.rect.y )
 
+                # Handle dialogue - start or advance
+                if event.key == pygame.K_e:
+                    if self.dialogue_active:
+                        # Advance dialogue
+                        if not self.dialogue_box.next_dialogue():
+                            # Dialogue finished
+                            self.dialogue_active = False
+                    else:
+                        # Check if near NPC to start dialogue
+                        for npc in self.npcs:
+                            detection_rect = npc.rect.inflate(TILESIZE, TILESIZE)
+                            if detection_rect.colliderect(self.player.rect):
+                                self.dialogue_active = True
+                                self.dialogue_box.start_dialogue(npc.dialogue)
+                                break
+                
             if self.player.inBattle == 1:
-                self.battle(self.battle_enemy) # Get the enemy touched from the battle_enemy which was taken from the hits[] list
+                self.battle(self.battle_enemy, self.player) # Get the enemy touched from the battle_enemy which was taken from the hits[] list
 
-    def battle(self, enemy):
+    def battle(self, enemy, player):
         self.playing = 0 # Exit overworld and enter battle screen
+        self.curr_menu = self.battlemenu
         while self.player.inBattle:
+                        
+            self.screen.blit(self.intro_background, (0,0)) # Draw background image
+            self.screen.blit(enemy.battle_sprite, (240, 60))
+            self.battlemenu.display_menu()
+
             for event in pygame.event.get(): # Get inputs from player every frame
                 if event.type == pygame.QUIT:
                     self.playing = False
@@ -142,9 +173,9 @@ class Game(): # Contains our info and variables related to the game, user inputs
                         self.playing = 1
                         enemy.kill()
                         break
+                    self.battlemenu.check_input(event.key)
             
-            self.screen.blit(self.intro_background, (0,0)) # Draw background image
-            self.screen.blit(enemy.battle_sprite, (240, 120))
+
             self.clock.tick(FPS) # 
             pygame.display.update() # physically puts this on the monitor/computer screen
             
