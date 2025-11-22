@@ -1,5 +1,6 @@
 import pygame
-import config
+from config import *
+from sprites import * 
 
 # menu class from CD Codes
 class Menu():
@@ -20,6 +21,67 @@ class Menu():
         # Copy the pixels from self.game.display (the off-screen canvas) onto self.game.window (the visible screen), starting at coordinates (0, 0)
         pygame.display.update()
         self.game.reset_keys() # reset inputs to false
+
+    # Source - https://stackoverflow.com/questions/49432109/how-to-wrap-text-in-pygame-using-pygame-font-font
+# Posted by SpoonMeiser, modified by community. See post 'Timeline' for change history
+# Retrieved 2025-11-22, License - CC BY-SA 3.0
+
+    def renderTextCenteredAt(self, text, font, colour, x, y, screen, allowed_width):
+        # first, split the text into words
+        words = text.split()
+
+        # now, construct lines out of these words
+        lines = []
+        while len(words) > 0:
+            # get as many words as will fit within allowed_width
+            line_words = []
+            while len(words) > 0:
+                line_words.append(words.pop(0))
+                fw, fh = font.size(' '.join(line_words + words[:1]))
+                if fw > allowed_width:
+                    break
+
+            # add a line consisting of those words
+            line = ' '.join(line_words)
+            lines.append(line)
+
+        # now we've split our text into lines that fit into the width, actually
+        # render them
+
+        # we'll render each line below the last, so we need to keep track of
+        # the culmative height of the lines we've rendered so far
+        y_offset = 0
+        for line in lines:
+            fw, fh = font.size(line)
+
+            # (tx, ty) is the top-left of the font surface
+            tx = x - fw / 2
+            ty = y + y_offset
+
+            font_surface = font.render(line, True, colour)
+            screen.blit(font_surface, (tx, ty))
+
+            y_offset += fh
+
+    def renderTextLeft(self, text, font, colour, x, y, screen, allowed_width):
+        words = text.split()
+        lines = []
+
+        while words:
+            line_words = []
+            while words:
+                line_words.append(words.pop(0))
+                fw, fh = font.size(' '.join(line_words + words[:1]))
+                if fw > allowed_width:
+                    break
+            lines.append(' '.join(line_words))
+
+        y_offset = 0
+        for line in lines:
+            screen.blit(font.render(line, True, colour), (x, y + y_offset))
+            y_offset += font.size(line)[1]
+
+
 
 class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Menu is the parent, MainMenu is the child
     def __init__(self, game): # needs its own init function and reference to the game
@@ -139,11 +201,13 @@ class BattleMenu(Menu):
         # Use integer dimensions for the surface
         self.battle_display = pygame.Surface((self.game.DISPLAY_W, self.game.DISPLAY_H)) # Canvas(dimensions)
         self.state = "Attack"
-        self.attackx, self.attacky = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 220 # Aligning where on the screen we want to place our "start game" text
-        self.itemx, self.itemy = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 180 # Aligning options below the "start game"
-        self.talkx, self.talky = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 140
-        self.fleex, self.fleey = self.game.DISPLAY_W / 4, int(self.game.DISPLAY_H / 2) - 100
+        self.attackx, self.attacky = 200, 180 # Aligning where on the screen we want to place our "start game" text
+        self.itemx, self.itemy = 400, 180 # Aligning options below the "start game"
+        self.talkx, self.talky = 600, 180
+        self.fleex, self.fleey = 800, 180
+        self.textx, self.texty = 150, 60
         self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky) # midpoint of the top edge of the rectangle
+        self.textbox = "An enemy approaches!"
         # midtop is one of the position attributes of a Pygame Rect object
 
     def display_menu(self):
@@ -153,21 +217,24 @@ class BattleMenu(Menu):
         
         self.battle_display.fill(self.game.BLACK)
         # Draw text directly onto the battle surface so it will be visible
-        self.game.draw_text('Attack', 20, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
-        self.game.draw_text('Item', 20, self.itemx, self.itemy, surface=self.battle_display)
-        self.game.draw_text('Talk', 20, self.talkx, self.talky, surface=self.battle_display)
-        self.game.draw_text('Flee', 20, self.fleex, self.fleey, surface=self.battle_display)
+        self.game.draw_text('Attack', 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
+        self.game.draw_text('Item', 40, self.itemx, self.itemy, surface=self.battle_display)
+        self.game.draw_text('Talk', 40, self.talkx, self.talky, surface=self.battle_display)
+        self.game.draw_text('Flee', 40, self.fleex, self.fleey, surface=self.battle_display)
+       #(text, font, colour, x, y, screen, allowed_width)
+        font = pygame.font.Font(self.game.font_name, 40)
+        self.renderTextLeft(self.textbox, font, WHITE, self.textx, self.texty, self.battle_display, 1600)
         self.draw_cursor(surface=self.battle_display)
         self.blit_battle_menu()
 
     def blit_battle_menu(self):
-        self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 60))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
+        self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 300))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
         # Copy the pixels from self.game.display (the off-screen canvas) onto self.game.window (the visible screen), starting at coordinates (0, 0)
         pygame.display.update()
         self.game.reset_keys() # reset inputs to false
 
     def move_cursor(self, key): # the menu from Top to bottom will be Start Game, Options, Credits
-        if key == pygame.K_DOWN:
+        if key == pygame.K_RIGHT:
             if self.state == 'Attack': # if cursor is at start and we receive an input to move the cursor down, we  must adjust the cursor to move down to options
                 self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy) # midtop is a variable from our MainMenu class
                 self.state = 'Item'
@@ -181,7 +248,7 @@ class BattleMenu(Menu):
                 self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
                 self.state = 'Attack'
         
-        if key == pygame.K_UP:
+        if key == pygame.K_LEFT:
             if self.state == 'Attack': 
                 self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey) # midtop is a variable from our MainMenu class
                 self.state = 'Flee'
@@ -197,15 +264,15 @@ class BattleMenu(Menu):
 
     def check_input(self, key):
         self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
-        if key == pygame.K_RETURN: # If the player clicks Enter
+        if key == pygame.K_RETURN or key == pygame.K_e: # If the player clicks Enter or INTERACT_KEY
             if self.state == 'Attack':     
-                print("Player Attacks!")
+                self.textbox = "Player Attacks!"
             elif self.state == 'Item':
-                print("You don't have any items")
+                self.textbox = "You don't have any items"
             elif self.state == 'Talk':
-               print("The enemy doesn't seem to be very talkative")
+               self.textbox ="The enemy doesn't seem to be very talkative"
             elif self.state == 'Flee':
-                print("Unable to flee!")
+                self.textbox ="Unable to flee!"
             else:
                 print ("ERROR: State self.malfunctioned")
             

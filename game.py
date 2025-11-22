@@ -3,18 +3,16 @@ from menu import * # now we have access to the MainMenu class
 from sprites import *
 from config import *
 
-
-
 class Game(): # Contains our info and variables related to the game, user inputs, game loop, drawing stuff to the screen,
     def __init__(self):
         pygame.init()
         #Menu code
         self.running, self.playing = True, False # game is running but player is not currently playing
         self.UP_KEY, self.DOWN_KEY, self.ENTER_KEY, self.BACK_KEY, self.ESC_KEY = False, False, False, False, False # Controls for our menu initialized to false. Upon keystroke (ex. UP arrow) they will be set to true
-        self.DISPLAY_W, self.DISPLAY_H = 640, 480 # width and height of our canvas
+        self.DISPLAY_W, self.DISPLAY_H = 1920, 1080 # width and height of our canvas
         self.display = pygame.Surface((self.DISPLAY_W,self.DISPLAY_H)) # Canvas(dimensions)
         self.window = pygame.display.set_mode(((self.DISPLAY_W,self.DISPLAY_H))) # we want player to see what we're drawing. so this line displays the canvas
-        self.font_name = '8-BIT WONDER.TTF'
+        self.font_name = 'command_and_conquer.ttf'
         self.BLACK, self.WHITE = (0,0,0), (255,255,255)
         self.main_menu = MainMenu(self) #  create a MainMenu object called main_menu. the "self" allows game to be passed as an argument to MainMenu, giving MainMenu full access to our game's funtions and variables   
         self.options = OptionsMenu(self) # options menu object, pass in game object     
@@ -34,7 +32,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.attack_spritesheet = Spritesheet('img/attack.png')
         self.intro_background = pygame.image.load('./img/introbackground.png')
         self.game_over_background = pygame.image.load('./img/gameover.png')
-        self.battle_background = pygame.image.load('./img/battle_background.jpg')
+        self.battle_background = pygame.image.load('./img/grass-water-battle-background.jpg')
         
 # CD Codes game loop that just displays text to the screen
 #     def game_loop(self):
@@ -158,8 +156,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.curr_menu = self.battlemenu
         while self.player.inBattle:
                         
-            self.screen.blit(self.intro_background, (0,0)) # Draw background image
-            self.screen.blit(enemy.battle_sprite, (240, 60))
+            self.screen.blit(self.battle_background, (0,0)) # Draw background image
+            self.screen.blit(enemy.battle_sprite, (self.DISPLAY_W / 2, 350))
             self.battlemenu.display_menu()
 
             for event in pygame.event.get(): # Get inputs from player every frame
