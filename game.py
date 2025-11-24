@@ -21,6 +21,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.battlemenu = BattleMenu(self)
         self.curr_menu = self.main_menu # this allows us to swap between what menu is currently being shown to the player
 
+        
         # ShawCode RPG Tutorial Code
         self.screen = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
         self.clock = pygame.time.Clock()
@@ -114,6 +115,13 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.dialogue_active = False
         self.createTilemap()
         
+        # Instantiating Camera
+        self.camera = Camera(self.player)
+        self.follow = Follow(self.camera,self.player)
+        self.border = Border(self.camera,self.player)
+        self.auto = Auto(self.camera, self.player)
+        self.camera.setmethod(self.follow) # set camera default method to follow
+        
 
     def events(self):
         # game loop events
@@ -132,7 +140,13 @@ class Game(): # Contains our info and variables related to the game, user inputs
                         Attack(self, self.player.rect.x - TILESIZE, self.player.rect.y)
                     if self.player.facing == 'right':
                         Attack(self, self.player.rect.x + TILESIZE, self.player.rect.y )
-
+                #Handle camera
+                if event.key == pygame.K_1:
+                    self.camera.setmethod(self.follow)
+                if event.key == pygame.K_2:
+                    self.camera.setmethod(self.auto)
+                if event.key == pygame.K_3:
+                    self.camera.setmethod(self.border)
                 # Handle dialogue - start or advance
                 if event.key == pygame.K_e:
                     if self.dialogue_active:
@@ -181,16 +195,23 @@ class Game(): # Contains our info and variables related to the game, user inputs
 
     def update(self):
         self.all_sprites.update() # calls the update function on all_sprites in sprites.py # this is the line that updates the screen each frame. it calls each sprite's respective update function
-        
+        self.camera.scroll()
     
     def draw(self):
         self.screen.fill(BLACK)
-        self.all_sprites.draw(self.screen) # All_sprites group, draw will look through all sprites in all_sprites, finds the image and the rectangle and draws it to the window
+        # self.all_sprites.draw(self.screen) # All_sprites group, draw will look through all sprites in all_sprites, finds the image and the rectangle and draws it to the window
+        
+        for sprite in self.all_sprites:
+        # sprite.rect.topleft is world position
+            offset_pos = sprite.rect.topleft - self.camera.offset
+            self.screen.blit(sprite.image, offset_pos)
+        
         # Draw dialogue box if it exists
         if hasattr(self, 'dialogue_box'):
             self.dialogue_box.draw(self.screen)
         self.clock.tick(FPS) # 1 tick per frame, 60 FPS
         pygame.display.update()
+        
     def main(self):
         # game loop
         while self.playing:

@@ -31,6 +31,10 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
         self.facing = 'down'
         self.animation_loop = 1
+        
+        self.left_border = 0
+        self.right_border = WIN_WIDTH * TILESIZE
+
 
 
         # if we put the animations in the __init__ and add "self" to them we can call them any time insted of having them be in the animate function
@@ -93,23 +97,23 @@ class Player(pygame.sprite.Sprite): # Layer 3
     def movement(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_a]: # if left arrow key pressed
-            for sprite in self.game.all_sprites:
-                sprite.rect.x += PLAYER_SPEED # moving all sprites (except the player) to the right to give the illusion the camera is moving
+            #for sprite in self.game.all_sprites:
+              #  pass# sprite.rect.x += PLAYER_SPEED # moving all sprites (except the player) to the right to give the illusion the camera is moving
             self.x_change -= PLAYER_SPEED # reduce the x axis to move the player left
             self.facing = 'left'
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]: # if left arrow key pressed
-            for sprite in self.game.all_sprites:
-                sprite.rect.x -= PLAYER_SPEED
+            #for sprite in self.game.all_sprites:
+               #pass# sprite.rect.x -= PLAYER_SPEED
             self.x_change += PLAYER_SPEED # reduce the x axis to move the player left
             self.facing = 'right'
         if keys[pygame.K_UP] or keys[pygame.K_w]: # if left arrow key pressed
-            for sprite in self.game.all_sprites:
-                sprite.rect.y += PLAYER_SPEED
+           #for sprite in self.game.all_sprites:
+               # pass# sprite.rect.y += PLAYER_SPEED
             self.y_change -= PLAYER_SPEED # reduce the y axis to move the player up
             self.facing = 'up'
         if keys[pygame.K_DOWN] or keys[pygame.K_s]: # if left arrow key pressed
-            for sprite in self.game.all_sprites:
-                sprite.rect.y -= PLAYER_SPEED
+           #for sprite in self.game.all_sprites:
+               # pass# sprite.rect.y -= PLAYER_SPEED
             self.y_change += PLAYER_SPEED # increase the y axis to move the player down
             self.facing = 'down'
 
@@ -135,25 +139,25 @@ class Player(pygame.sprite.Sprite): # Layer 3
                     #When a collision is detected and the player's position is corrected, the code moves all sprites back by PLAYER_SPEED
                     # So basically the camera moves twice within the 1 frame, if running into a wall right, all sprites still move right, but this fix moves the sprite to the left after that happens, so when its drawn to the screen its just stationary
                     #  since the player isnt actually moving beyond the wall
-                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
-                        sprite.rect.x += PLAYER_SPEED
+                    #for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                         #pass# sprite.rect.x += PLAYER_SPEED
 
                 if self.x_change < 0:
                     self.rect.x = hits[0].rect.right                   
-                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
-                        sprite.rect.x -= PLAYER_SPEED
+                   #for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                        # pass# sprite.rect.x -= PLAYER_SPEED
 
         if direction == 'y':
             hits = pygame.sprite.spritecollide(self, sprite_group, False)
             if hits:
                 if self.y_change > 0:
                     self.rect.y = hits[0].rect.top - self.rect.height
-                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
-                        sprite.rect.y += PLAYER_SPEED
+                    #for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                       #sprite.rect.y += PLAYER_SPEED
                 if self.y_change < 0:
                     self.rect.y = hits[0].rect.bottom
-                    for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
-                        sprite.rect.y -= PLAYER_SPEED
+                    #for sprite in self.game.all_sprites: # fix camera bug so player is always focused by the camera
+                        #sprite.rect.y -= PLAYER_SPEED
     
     def animate(self):
         

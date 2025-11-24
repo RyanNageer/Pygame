@@ -9,7 +9,11 @@ class Camera:
         self.offset = vec(0,0) # What we use to frame our camera in the right position
         self.offset_float = vec(0,0) # stores precise position of our offset
         self.DISPLAY_W, self.DISPLAY_H = 1920, 1080
-        self.CONST = vec(-self.DISPLAY_W / 2 + player.rect.w / 2, -self.player.ground_y + 20)
+        self.CONST = vec(
+            -self.DISPLAY_W / 2 + player.rect.w / 2,
+            -self.DISPLAY_H / 2 + player.rect.h / 2
+        )
+
 
     def setmethod(self, method): # Picks the method we're using, whether it be auto, follow, or border
         self.method = method
@@ -32,9 +36,16 @@ class Follow(CamScroll):
 
                       # we subtract the position of the player by the position of the camera in order to put the camera in the correct spot at the position of the player
     def scroll(self): # if we subtract the position of the camera by an offset the player will always be in the middle of the screen
-        self.camera.offset_float.x += (self.player.rect.x - self.camera.offset_float.x + self.camera.CONST.x)
-        self.camera.offset_float.x += (self.player.rect.y - self.camera.offset_float.y + self.camera.CONST.y)
-        self.camera.offset.x, self.camera.offset.y = int(self.camera.offset_float.x), int(self.camera.offset_float.y)
+        # Smooth follow (optional: multiply by 0.1 for easing)
+        target_x = self.player.rect.x + self.camera.CONST.x
+        target_y = self.player.rect.y + self.camera.CONST.y
+
+        # Ease camera toward target (smooth follow)
+        self.camera.offset_float.x += (target_x - self.camera.offset_float.x) * 0.1
+        self.camera.offset_float.y += (target_y - self.camera.offset_float.y) * 0.1
+
+        self.camera.offset.x = int(self.camera.offset_float.x)
+        self.camera.offset.y = int(self.camera.offset_float.y)
 
 class Border(CamScroll):
     def __init__(self, camera, player):
@@ -42,13 +53,13 @@ class Border(CamScroll):
         
     def scroll(self):
         self.camera.offset_float.x += (self.player.rect.x - self.camera.offset_float.x + self.camera.CONST.x)
-        self.camera.offset_float.x += (self.player.rect.y - self.camera.offset_float.y + self.camera.CONST.y)
+        self.camera.offset_float.y += (self.player.rect.y - self.camera.offset_float.y + self.camera.CONST.y)
         self.camera.offset.x, self.camera.offset.y = int(self.camera.offset_float.x), int(self.camera.offset_float.y)
         self.camera.offset.x = max(self.player.left_border, self.camera.offset.x) # handles the left border # to stop the camera from scrolling in the left when we hit the border of the play area
         self.camera.offset.x = min(self.camera.offset.x, self.player.right_border - self.camera.DISPLAY_W)
         
 class Auto(CamScroll): # Screen moving independently of the player
-    def _init__(self, camera, player):
+    def __init__(self, camera, player):
         CamScroll.__init__(self, camera, player)
         
     def scroll(self):
