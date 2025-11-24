@@ -2,6 +2,7 @@ import pygame # package
 from menu import * # now we have access to the MainMenu class
 from sprites import *
 from config import *
+from camera import *
 
 class Game(): # Contains our info and variables related to the game, user inputs, game loop, drawing stuff to the screen,
     def __init__(self):
