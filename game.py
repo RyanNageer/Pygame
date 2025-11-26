@@ -34,7 +34,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.attack_spritesheet = Spritesheet('img/attack.png')
         self.intro_background = pygame.image.load('./img/introbackground.png')
         self.game_over_background = pygame.image.load('./img/gameover.png')
-        self.battle_background = pygame.image.load('./img/grass-water-battle-background.jpg')
+        
         
 # CD Codes game loop that just displays text to the screen
 #     def game_loop(self):
@@ -173,10 +173,15 @@ class Game(): # Contains our info and variables related to the game, user inputs
         self.curr_menu = self.battlemenu
         while self.player.inBattle:
                         
-            self.screen.blit(self.battle_background, (0,0)) # Draw background image
-            self.screen.blit(enemy.battle_sprite, (self.DISPLAY_W / 2, 350))
-            self.battlemenu.display_menu(player, enemy)
-
+            
+            flag = self.battlemenu.display_menu(player, enemy)
+            
+            if flag == 1: # enemy defeated
+                self.player.inBattle = 0
+                self.playing = 1
+                enemy.kill()
+                break
+            
             for event in pygame.event.get(): # Get inputs from player every frame
                 if event.type == pygame.QUIT:
                     self.playing = False

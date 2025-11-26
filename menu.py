@@ -80,6 +80,16 @@ class Menu():
         for line in lines:
             screen.blit(font.render(line, True, colour), (x, y + y_offset))
             y_offset += font.size(line)[1]
+    
+    def wait_for_keypress(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # If the window is closed
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_e or event.key == pygame.K_RETURN:
+                        return  # Exit the loop when 'e' is pressed
 
 
 
@@ -209,8 +219,9 @@ class BattleMenu(Menu):
         self.fleex, self.fleey = 800, 180
         self.textx, self.texty = 150, 60
         
-        self.player_hpx, self.player_hpy = 120, 40
-        self.player_namex, self.player_namey = 80, 100
+        self.player_namex, self.player_namey =  110, 40
+        self.player_hpx, self.player_hpy = 120, 80
+        self.player_xpx, self.player_xpy = 120, 120
         
         self.enemy_hpx, self.enemy_hpy = 120, 60
         self.enemy_namex, self.enemy_namey = 120, 120
@@ -223,6 +234,7 @@ class BattleMenu(Menu):
         # Draw a single frame of the battle UI.
         # The outer `Game.battle` loop handles the event polling and input,
         # so this method should only render and return each frame.
+        
         
         self.battle_display.fill(self.game.BLACK)
         self.player_stats.fill(self.game.WHITE)
@@ -237,16 +249,36 @@ class BattleMenu(Menu):
         self.game.draw_text(f"{enemy.name}", 40, self.enemy_namex, self.enemy_namey, surface=self.enemy_stats)
         
         self.game.draw_text(f"HP: {player.CUR_HP} / {player.MAX_HP}", 40, self.player_hpx, self.player_hpy, color=self.game.BLACK, surface=self.player_stats)
-        self.game.draw_text(f"{player.name}", 40, self.player_namex, self.player_namey, color=self.game.BLACK, surface=self.player_stats)
+        self.game.draw_text(f"{player.name}", 40, self.player_namex, self.player_namey, color=self.game.BLACK, surface=self.player_stats)       
+        self.game.draw_text(f"XP: {player.CUR_XP} / {player.XP_NEEDED}", 40, self.player_xpx, self.player_xpy, color=self.game.BLACK, surface=self.player_stats)
+        
        #(text, font, colour, x, y, screen, allowed_width)
+       
+        if enemy.CUR_HP <= 0:
+            # pygame.time.delay(1000) # wait 1 second
+            self.textbox = f"{enemy.name} has been defeated! 2 XP gained. Press e to return to overworld."
+            player.CUR_XP += 2
+            
+       
         font = pygame.font.Font(self.game.font_name, 40)
         self.renderTextLeft(self.textbox, font, WHITE, self.textx, self.texty, self.battle_display, 1600)
         self.draw_cursor(surface=self.battle_display)
-        self.blit_battle_menu()
+        self.blit_battle_menu(enemy)
+        
+        if enemy.CUR_HP <= 0:
+            self.blit_battle_menu(enemy)
+            self.wait_for_keypress()
+            enemy.CUR_HP = enemy.MAX_HP
+            return 1
+        
+        
 
-    def blit_battle_menu(self):
+    def blit_battle_menu(self, enemy):
+        self.game.window.blit(enemy.battle_background, (0,0)) # Draw background image
+        if enemy.CUR_HP > 0:
+            self.game.window.blit(enemy.battle_sprite, (self.game.DISPLAY_W / 2, 350))
         self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 300))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
-        self.game.window.blit(self.player_stats, (1420, 880))
+        self.game.window.blit(self.player_stats, (1420, 673))
         self.game.window.blit(self.enemy_stats, (0, 0))
         
         # Copy the pixels from self.game.display (the off-screen canvas) onto self.game.window (the visible screen), starting at coordinates (0, 0)
@@ -286,9 +318,8 @@ class BattleMenu(Menu):
         self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
         if key == pygame.K_RETURN or key == pygame.K_e: # If the player clicks Enter or INTERACT_KEY
             if self.state == 'Attack':     
-                self.textbox = "Player Attacks!"
-                
-                enemy.CUR_HP -= player.ATK
+                self.textbox = "Player Attacks!"               
+                enemy.CUR_HP = max(0, enemy.CUR_HP - player.ATK)
             elif self.state == 'Item':
                 self.textbox = "You don't have any items"
             elif self.state == 'Talk':

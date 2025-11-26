@@ -74,6 +74,8 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.MAX_HP = 20
         self.CUR_HP = 20
         self.ATK = 2
+        self.CUR_XP = 0
+        self.XP_NEEDED = 10
         self.name = "Player"
         
 
@@ -199,7 +201,8 @@ class Player(pygame.sprite.Sprite): # Layer 3
 class Enemy(pygame.sprite.Sprite):
 
     battle_sprite = None # will hold the string that will lead to the image of the battle sprite
-
+    battle_background = None
+    
     def __init__(self, game, x ,y):
 
         self.game = game
@@ -248,6 +251,7 @@ class Enemy(pygame.sprite.Sprite):
         self.MAX_HP = 5
         self.CUR_HP = 5
         self.ATK = 1
+        self.LVL = 1
         
 
         
@@ -314,7 +318,8 @@ class Johnluke(Enemy):
     name = "Johnluke"
     orig_w, orig_h = battle_sprite.get_size()
     scale = 0.5  # 50% size
-
+    battle_background = pygame.image.load('./img/grass-water-battle-background.jpg')
+    
     new_w = int(orig_w * scale)
     new_h = int(orig_h * scale)
 
@@ -325,6 +330,7 @@ class Johnluke(Enemy):
 
 class Fly(Enemy):
     battle_sprite = pygame.image.load('img/fly.png')
+    battle_background = pygame.image.load('./img/grass-water-battle-background.jpg')
     name = "Fly"
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
