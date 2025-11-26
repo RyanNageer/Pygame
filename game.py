@@ -100,7 +100,10 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 if column == 'E':
                     Johnluke(self, j, i) # pass in game object (self) and coordinates
                 if column == 'N':
-                    NPC(self, j, i, ["Hello!", "How are you?", "Nice to meet you!"]) # pass in game object (self) and coordinates
+                    NPC(self, j, i, ["Hello!",
+                                     "How are you?",
+                                     "Nice to meet you!",
+                                     "Wanna see my Chungles?"]) # pass in game object (self) and coordinates
                 if column == 'FLY':
                     Fly(self, j, i) # pass in game object (self) and coordinates
      
@@ -171,14 +174,17 @@ class Game(): # Contains our info and variables related to the game, user inputs
     def battle(self, player, enemy):
         self.playing = 0 # Exit overworld and enter battle screen
         self.curr_menu = self.battlemenu
+        self.curr_menu.battle_init(enemy) # runs before every battle starts
+        player_move_success = 0
         while self.player.inBattle:
                         
             
-            flag = self.battlemenu.display_menu(player, enemy)
+            self.battlemenu.display_menu(player, enemy)
             
-            if flag == 1: # enemy defeated
+            if enemy.CUR_HP == 0: # enemy defeated
                 self.player.inBattle = 0
                 self.playing = 1
+                enemy.CUR_HP = enemy.MAX_HP
                 enemy.kill()
                 break
             
@@ -193,11 +199,15 @@ class Game(): # Contains our info and variables related to the game, user inputs
                         self.playing = 1
                         enemy.kill()
                         break
-                    self.battlemenu.check_input(event.key, player, enemy)
+                    player_move_success = self.battlemenu.check_input(event.key, player, enemy)
             
 
             self.clock.tick(FPS) # 
             pygame.display.update() # physically puts this on the monitor/computer screen
+            
+            if player_move_success == 1:
+                self.curr_menu.enemy_move(player, enemy)
+                player_move_success = 0
             
 
     def update(self):

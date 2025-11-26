@@ -1,4 +1,5 @@
 import pygame
+import inflect
 from config import *
 from sprites import * 
 
@@ -230,7 +231,13 @@ class BattleMenu(Menu):
         self.textbox = "An enemy approaches!"
         # midtop is one of the position attributes of a Pygame Rect object
 
-    def display_menu(self, player, enemy):
+    def battle_init(self, enemy):
+        p = inflect.engine() # use the inflect module to check for vowels
+        self.textbox = f"{p.a(enemy.name)[0].upper()}{p.a(enemy.name)[1:]} appears!" # picks between a and an and capitalizes the A
+        self.state = "Attack"
+        
+
+    def display_menu(self, player, enemy, enemy_defeated_flag=0): # Does NOT adjust any values, only displays.
         # Draw a single frame of the battle UI.
         # The outer `Game.battle` loop handles the event polling and input,
         # so this method should only render and return each frame.
@@ -252,30 +259,17 @@ class BattleMenu(Menu):
         self.game.draw_text(f"{player.name}", 40, self.player_namex, self.player_namey, color=self.game.BLACK, surface=self.player_stats)       
         self.game.draw_text(f"XP: {player.CUR_XP} / {player.XP_NEEDED}", 40, self.player_xpx, self.player_xpy, color=self.game.BLACK, surface=self.player_stats)
         
-       #(text, font, colour, x, y, screen, allowed_width)
-       
-        if enemy.CUR_HP <= 0:
-            # pygame.time.delay(1000) # wait 1 second
-            self.textbox = f"{enemy.name} has been defeated! 2 XP gained. Press e to return to overworld."
-            player.CUR_XP += 2
-            
+       #(text, font, colour, x, y, screen, allowed_width)    
        
         font = pygame.font.Font(self.game.font_name, 40)
         self.renderTextLeft(self.textbox, font, WHITE, self.textx, self.texty, self.battle_display, 1600)
         self.draw_cursor(surface=self.battle_display)
-        self.blit_battle_menu(enemy)
-        
-        if enemy.CUR_HP <= 0:
-            self.blit_battle_menu(enemy)
-            self.wait_for_keypress()
-            enemy.CUR_HP = enemy.MAX_HP
-            return 1
-        
-        
+        self.blit_battle_menu(enemy, enemy_defeated_flag)
+                       
 
-    def blit_battle_menu(self, enemy):
+    def blit_battle_menu(self, enemy, enemy_defeated_flag=0): # Redisplays the whole battle menu, does NOT affect any values
         self.game.window.blit(enemy.battle_background, (0,0)) # Draw background image
-        if enemy.CUR_HP > 0:
+        if enemy.CUR_HP > 0 and enemy_defeated_flag == 0:
             self.game.window.blit(enemy.battle_sprite, (self.game.DISPLAY_W / 2, 350))
         self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 300))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
         self.game.window.blit(self.player_stats, (1420, 673))
@@ -315,17 +309,43 @@ class BattleMenu(Menu):
                 self.state = 'Talk'
 
     def check_input(self, key, player, enemy):
+        successful_move = 0
         self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
         if key == pygame.K_RETURN or key == pygame.K_e: # If the player clicks Enter or INTERACT_KEY
             if self.state == 'Attack':     
                 self.textbox = "Player Attacks!"               
                 enemy.CUR_HP = max(0, enemy.CUR_HP - player.ATK)
+                self.display_menu(player, enemy)
+                pygame.time.delay(1000)
+                successful_move = 1
             elif self.state == 'Item':
                 self.textbox = "You don't have any items"
+                successful_move = 0
             elif self.state == 'Talk':
                self.textbox ="The enemy doesn't seem to be very talkative"
+               successful_move = 0
             elif self.state == 'Flee':
                 self.textbox ="Unable to flee!"
+                successful_move = 0
             else:
                 print ("ERROR: State self.malfunctioned")
+                successful_move = 0
+        return successful_move
+    
+    def enemy_move(self, player, enemy):
+        if enemy.CUR_HP <= 0:
+            pygame.time.delay(1000) # wait 1 second
+            self.textbox = f"{enemy.name} has been defeated! 2 XP gained. Press e to return to overworld."
+            player.CUR_XP += 2
+            self.display_menu(player, enemy, 1) # This will remove the enemy's sprite from the screen
+            self.wait_for_keypress()
+            self.textbox = ""
+            return
+        self.textbox = f"{enemy.name} attacks!"
+        player.CUR_HP = max(0, player.CUR_HP - enemy.ATK)
+        self.display_menu(player, enemy)
+        
+        
+        pygame.time.delay(1000)
+        
             
