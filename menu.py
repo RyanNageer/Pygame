@@ -199,28 +199,45 @@ class BattleMenu(Menu):
     def __init__(self, game):
         Menu.__init__(self,game)
         # Use integer dimensions for the surface
-        self.battle_display = pygame.Surface((self.game.DISPLAY_W, self.game.DISPLAY_H)) # Canvas(dimensions)
+        self.battle_display = pygame.Surface((self.game.DISPLAY_W, 300)) # Canvas(dimensions)
+        self.player_stats = pygame.Surface((380, 167))
+        self.enemy_stats = pygame.Surface((500, 200))
         self.state = "Attack"
         self.attackx, self.attacky = 200, 180 # Aligning where on the screen we want to place our "start game" text
         self.itemx, self.itemy = 400, 180 # Aligning options below the "start game"
         self.talkx, self.talky = 600, 180
         self.fleex, self.fleey = 800, 180
         self.textx, self.texty = 150, 60
+        
+        self.player_hpx, self.player_hpy = 120, 40
+        self.player_namex, self.player_namey = 80, 100
+        
+        self.enemy_hpx, self.enemy_hpy = 120, 60
+        self.enemy_namex, self.enemy_namey = 120, 120
+        
         self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky) # midpoint of the top edge of the rectangle
         self.textbox = "An enemy approaches!"
         # midtop is one of the position attributes of a Pygame Rect object
 
-    def display_menu(self):
+    def display_menu(self, player, enemy):
         # Draw a single frame of the battle UI.
         # The outer `Game.battle` loop handles the event polling and input,
         # so this method should only render and return each frame.
         
         self.battle_display.fill(self.game.BLACK)
+        self.player_stats.fill(self.game.WHITE)
+        self.enemy_stats.fill(self.game.BLACK)
         # Draw text directly onto the battle surface so it will be visible
         self.game.draw_text('Attack', 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
         self.game.draw_text('Item', 40, self.itemx, self.itemy, surface=self.battle_display)
         self.game.draw_text('Talk', 40, self.talkx, self.talky, surface=self.battle_display)
         self.game.draw_text('Flee', 40, self.fleex, self.fleey, surface=self.battle_display)
+        
+        self.game.draw_text(f"HP: {enemy.CUR_HP} / {enemy.MAX_HP}", 40, self.enemy_hpx, self.enemy_hpy, surface=self.enemy_stats)
+        self.game.draw_text(f"{enemy.name}", 40, self.enemy_namex, self.enemy_namey, surface=self.enemy_stats)
+        
+        self.game.draw_text(f"HP: {player.CUR_HP} / {player.MAX_HP}", 40, self.player_hpx, self.player_hpy, color=self.game.BLACK, surface=self.player_stats)
+        self.game.draw_text(f"{player.name}", 40, self.player_namex, self.player_namey, color=self.game.BLACK, surface=self.player_stats)
        #(text, font, colour, x, y, screen, allowed_width)
         font = pygame.font.Font(self.game.font_name, 40)
         self.renderTextLeft(self.textbox, font, WHITE, self.textx, self.texty, self.battle_display, 1600)
@@ -229,6 +246,9 @@ class BattleMenu(Menu):
 
     def blit_battle_menu(self):
         self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 300))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
+        self.game.window.blit(self.player_stats, (1420, 880))
+        self.game.window.blit(self.enemy_stats, (0, 0))
+        
         # Copy the pixels from self.game.display (the off-screen canvas) onto self.game.window (the visible screen), starting at coordinates (0, 0)
         pygame.display.update()
         self.game.reset_keys() # reset inputs to false
@@ -262,11 +282,13 @@ class BattleMenu(Menu):
                 self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
                 self.state = 'Talk'
 
-    def check_input(self, key):
+    def check_input(self, key, player, enemy):
         self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
         if key == pygame.K_RETURN or key == pygame.K_e: # If the player clicks Enter or INTERACT_KEY
             if self.state == 'Attack':     
                 self.textbox = "Player Attacks!"
+                
+                enemy.CUR_HP -= player.ATK
             elif self.state == 'Item':
                 self.textbox = "You don't have any items"
             elif self.state == 'Talk':

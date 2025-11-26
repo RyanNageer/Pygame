@@ -72,7 +72,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
     def reset_keys(self):
         self.UP_KEY, self.DOWN_KEY, self.ENTER_KEY, self.BACK_KEY, self.ESC_KEY = False, False, False, False, False
 
-    def draw_text(self, text, size, x, y, surface=None):
+    def draw_text(self, text, size, x, y, color=(255,255,255), surface=None):
         """Render `text` to `surface` (defaults to `self.display`).
 
         Added `surface` parameter so callers can draw text to any surface
@@ -82,7 +82,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         if surface is None: # default main menu surface
             surface = self.display
         font = pygame.font.Font(self.font_name, size)
-        text_surface = font.render(text, True, self.WHITE)
+        text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
         text_rect.center = (x, y)
         surface.blit(text_surface, text_rect)
@@ -101,6 +101,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
                     Johnluke(self, j, i) # pass in game object (self) and coordinates
                 if column == 'N':
                     NPC(self, j, i, ["Hello!", "How are you?", "Nice to meet you!"]) # pass in game object (self) and coordinates
+                if column == 'FLY':
+                    Fly(self, j, i) # pass in game object (self) and coordinates
      
     def new(self):
         
@@ -164,16 +166,16 @@ class Game(): # Contains our info and variables related to the game, user inputs
                                 break
                 
             if self.player.inBattle == 1:
-                self.battle(self.battle_enemy, self.player) # Get the enemy touched from the battle_enemy which was taken from the hits[] list
+                self.battle(self.player, self.battle_enemy ) # Get the enemy touched from the battle_enemy which was taken from the hits[] list
 
-    def battle(self, enemy, player):
+    def battle(self, player, enemy):
         self.playing = 0 # Exit overworld and enter battle screen
         self.curr_menu = self.battlemenu
         while self.player.inBattle:
                         
             self.screen.blit(self.battle_background, (0,0)) # Draw background image
             self.screen.blit(enemy.battle_sprite, (self.DISPLAY_W / 2, 350))
-            self.battlemenu.display_menu()
+            self.battlemenu.display_menu(player, enemy)
 
             for event in pygame.event.get(): # Get inputs from player every frame
                 if event.type == pygame.QUIT:
@@ -186,7 +188,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
                         self.playing = 1
                         enemy.kill()
                         break
-                    self.battlemenu.check_input(event.key)
+                    self.battlemenu.check_input(event.key, player, enemy)
             
 
             self.clock.tick(FPS) # 

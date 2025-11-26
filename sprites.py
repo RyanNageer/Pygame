@@ -70,10 +70,11 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
         self.inBattle = 0
 
-        LVL = 1
-        MAX_HP = 20
-        CUR_HP = 20
-        ATK = 2
+        self.LVL = 1
+        self.MAX_HP = 20
+        self.CUR_HP = 20
+        self.ATK = 2
+        self.name = "Player"
         
 
     def update(self):
@@ -244,9 +245,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
-        MAX_HP = 5
-        CUR_HP = 5
-        ATK = 1
+        self.MAX_HP = 5
+        self.CUR_HP = 5
+        self.ATK = 1
+        
 
         
     
@@ -309,6 +311,7 @@ class Enemy(pygame.sprite.Sprite):
 
 class Johnluke(Enemy):
     battle_sprite = pygame.image.load('img/jl.PNG')
+    name = "Johnluke"
     orig_w, orig_h = battle_sprite.get_size()
     scale = 0.5  # 50% size
 
@@ -317,6 +320,12 @@ class Johnluke(Enemy):
 
     battle_sprite = pygame.transform.smoothscale(battle_sprite, (new_w, new_h))
 
+    def __init__(self, game, x ,y):
+        super().__init__(game, x, y) # Run parent init function
+
+class Fly(Enemy):
+    battle_sprite = pygame.image.load('img/fly.png')
+    name = "Fly"
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
 
