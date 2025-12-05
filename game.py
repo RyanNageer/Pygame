@@ -1,4 +1,6 @@
 import pygame # package
+import pdb # python debugger
+import pudb # A full-screen, console-based Python debugger
 from menu import * # now we have access to the MainMenu class
 from sprites import *
 from config import *
@@ -89,8 +91,8 @@ class Game(): # Contains our info and variables related to the game, user inputs
 
     # ShawCode
 
-    def createTilemap(self):
-        for i, row in enumerate(tilemap): # enumerate makes i set to the index and row is [i]
+    def createTilemap(self, tileMap):
+        for i, row in enumerate(tileMap): # enumerate makes i set to the index and row is [i]
             for j, column in enumerate(row):
                 Ground(self, j, i)
                 if column == 'B':
@@ -107,7 +109,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 if column == 'FLY':
                     Fly(self, j, i) # pass in game object (self) and coordinates
      
-    def new(self):
+    def new(self, tilemap):
         
         # pygame.sprite.Sprite is a Simple base class for visible game objects.
         self.all_sprites = pygame.sprite.LayeredUpdates() # Object that will contain all our sprites, walls, and enemies LayeredUpdates is a sprite group that handles layers and draws like OrderedUpdates.
@@ -118,7 +120,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
         # self.player = Player(self, 1, 2)
         self.dialogue_box = dialogue_box(self, self.font)
         self.dialogue_active = False
-        self.createTilemap()
+        self.createTilemap(tilemap)
         
         # Instantiating Camera
         self.camera = Camera(self.player)
@@ -170,6 +172,11 @@ class Game(): # Contains our info and variables related to the game, user inputs
                 
             if self.player.inBattle == 1:
                 self.battle(self.player, self.battle_enemy ) # Get the enemy touched from the battle_enemy which was taken from the hits[] list
+
+        if 69 + 16 >= self.player.rect.x >= 69 - 16 and -16 >= self.player.rect.y >= -32 - 16:
+            self.new(tilemap2)
+
+
 
     def battle(self, player, enemy):
         self.playing = 0 # Exit overworld and enter battle screen
@@ -258,7 +265,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
 
             if restart_button.is_pressed(mouse_pos, mouse_pressed): #enters the values we just gathered to check if the button at this restart_button rectangle has in fact been pressed
                 self.playing = True
-                self.new()          
+                self.new(tilemap1)          
                 self.main()
             
             self.screen.blit(self.game_over_background, (0,0)) # display at the top left corner of the screen
@@ -287,7 +294,7 @@ class Game(): # Contains our info and variables related to the game, user inputs
             if play_button.is_pressed(mouse_pos, mouse_pressed):
                 intro = False
                 self.playing = True
-                self.new()
+                self.new(tilemap1)
                 self.main()
 
             self.screen.blit(self.intro_background, (0,0))

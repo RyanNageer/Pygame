@@ -99,26 +99,33 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
     def movement(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]: # if left arrow key pressed
+        if keys:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]: # if left arrow key pressed
+                #for sprite in self.game.all_sprites:
+                #  pass# sprite.rect.x += PLAYER_SPEED # moving all sprites (except the player) to the right to give the illusion the camera is moving
+                self.x_change -= PLAYER_SPEED # reduce the x axis to move the player left
+                self.facing = 'left'
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]: # if left arrow key pressed
+                #for sprite in self.game.all_sprites:
+                #pass# sprite.rect.x -= PLAYER_SPEED
+                self.x_change += PLAYER_SPEED # reduce the x axis to move the player left
+                self.facing = 'right'
+            if keys[pygame.K_UP] or keys[pygame.K_w]: # if left arrow key pressed
             #for sprite in self.game.all_sprites:
-              #  pass# sprite.rect.x += PLAYER_SPEED # moving all sprites (except the player) to the right to give the illusion the camera is moving
-            self.x_change -= PLAYER_SPEED # reduce the x axis to move the player left
-            self.facing = 'left'
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]: # if left arrow key pressed
+                # pass# sprite.rect.y += PLAYER_SPEED
+                self.y_change -= PLAYER_SPEED # reduce the y axis to move the player up
+                self.facing = 'up'
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]: # if left arrow key pressed
             #for sprite in self.game.all_sprites:
-               #pass# sprite.rect.x -= PLAYER_SPEED
-            self.x_change += PLAYER_SPEED # reduce the x axis to move the player left
-            self.facing = 'right'
-        if keys[pygame.K_UP] or keys[pygame.K_w]: # if left arrow key pressed
-           #for sprite in self.game.all_sprites:
-               # pass# sprite.rect.y += PLAYER_SPEED
-            self.y_change -= PLAYER_SPEED # reduce the y axis to move the player up
-            self.facing = 'up'
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]: # if left arrow key pressed
-           #for sprite in self.game.all_sprites:
-               # pass# sprite.rect.y -= PLAYER_SPEED
-            self.y_change += PLAYER_SPEED # increase the y axis to move the player down
-            self.facing = 'down'
+                # pass# sprite.rect.y -= PLAYER_SPEED
+                self.y_change += PLAYER_SPEED # increase the y axis to move the player down
+                self.facing = 'down'
+                
+            # print statements
+            print(f'Player World Coordinates: {self.x}, {self.y}\n')
+            print(f'Player Rect Hitbox Coordinates: {self.rect.x}, {self.rect.y}\n')
+            
+        
 
     def collide_enemy(self):
         hits = pygame.sprite.spritecollide(self, self.game.enemies, False)

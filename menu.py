@@ -15,6 +15,7 @@ class Menu():
     def draw_cursor(self, surface=None):
         if surface is None:
             surface = self.game.display
+        
         self.game.draw_text('*', 15, self.cursor_rect.x, self.cursor_rect.y, surface=surface) # defined in the game class
 
     def blit_screen(self):
@@ -114,6 +115,7 @@ class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Men
             self.game.draw_text("Start Game", 20, self.startx, self.starty)
             self.game.draw_text("Options", 20, self.optionsx, self.optionsy)
             self.game.draw_text("Credits", 20, self.creditsx, self.creditsy)
+            
             self.draw_cursor()
             self.blit_screen() # put our updated canvas onto the visible screen
 
@@ -146,7 +148,7 @@ class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Men
         if self.game.ENTER_KEY: # If the player clicks Enter
             if self.state == 'Start':     
                 self.game.playing = True
-                self.game.new()
+                self.game.new(tilemap1)
                 self.game.main()
             elif self.state == 'Options':
                 self.game.curr_menu = self.game.options
@@ -226,10 +228,13 @@ class BattleMenu(Menu):
         
         self.enemy_hpx, self.enemy_hpy = 120, 60
         self.enemy_namex, self.enemy_namey = 120, 120
+        self.enemy_moving = 0
         
         self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky) # midpoint of the top edge of the rectangle
         self.textbox = "An enemy approaches!"
         # midtop is one of the position attributes of a Pygame Rect object
+        
+        
 
     def battle_init(self, enemy):
         p = inflect.engine() # use the inflect module to check for vowels
@@ -263,7 +268,8 @@ class BattleMenu(Menu):
        
         font = pygame.font.Font(self.game.font_name, 40)
         self.renderTextLeft(self.textbox, font, WHITE, self.textx, self.texty, self.battle_display, 1600)
-        self.draw_cursor(surface=self.battle_display)
+        if self.enemy_moving == 0:
+            self.draw_cursor(surface=self.battle_display)
         self.blit_battle_menu(enemy, enemy_defeated_flag)
                        
 
@@ -343,9 +349,11 @@ class BattleMenu(Menu):
             return
         self.textbox = f"{enemy.name} attacks!"
         player.CUR_HP = max(0, player.CUR_HP - enemy.ATK)
+        self.enemy_moving = 1
         self.display_menu(player, enemy)
-        
+        # I want the cursor to stop being drawn to the screen when an enemy is attacking
         
         pygame.time.delay(1000)
+        self.enemy_moving = 0
         
             
