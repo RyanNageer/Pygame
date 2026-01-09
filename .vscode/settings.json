@@ -1,0 +1,11 @@
+{
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportAttributeAccessIssue": "none",
+        "reportUndefinedVariable": "none",
+        "reportMissingImports": "none",
+        "reportGeneralTypeIssues": "none",
+        "reportArgumentType": "none",
+        "reportCallIssue": "none"
+    },
+    "python.analysis.typeCheckingMode": "basic"
+}
