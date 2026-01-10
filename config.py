@@ -1,3 +1,6 @@
+from asyncio.windows_events import NULL
+
+
 WIN_WIDTH = 1920
 WIN_HEIGHT = 1080
 TILESIZE = 32
@@ -43,7 +46,7 @@ spells = [
     # electric spells
     [12, "Zap", "electric", NULL, NULL, 10, 0, 0, 10, 0, 0, NULL, NULL], # standard electric attack
     [13, "Stun", "electric", NULL, NULL, 0, 0, 0, 10, 0, 0, "stun", NULL], # basic stun debuff
-    [14, "Lightning bolt", "electric", NULL, NULL, 20, 0, 0, 20, 0, 0, "stun", NULL], # stun the enemy with electric damage
+    [14, "Lightning Bolt", "electric", NULL, NULL, 20, 0, 0, 20, 0, 0, "stun", NULL], # stun the enemy with electric damage
 
     ##########
     # trifecta: spirit beats shadow, shadow beats basic, basic beats spirit. no other elemental interactions
@@ -72,6 +75,8 @@ spells = [
     # ultimate spell (can only be obtained by beating final boss)
     [30, "OBLITERATE", "shadow", "spirit", "basic", 100, 100, 100, 100, 100, 100, "OBLITERATE", "OBLITERATE AGAIN"], #OBLITERATE
 ]
+
+spellbook = [0, 14, 15, 27]  # For testing, player starts with Flame, Lightning Bolt, Punch, and Thermal Paradox Beam
 
 tilemap1 = [
     [' ', 'B', ' ', 'B', ' '],
