@@ -215,11 +215,12 @@ class BattleMenu(Menu):
         self.battle_display = pygame.Surface((self.game.DISPLAY_W, 300)) # Canvas(dimensions)
         self.player_stats = pygame.Surface((380, 167))
         self.enemy_stats = pygame.Surface((500, 200))
+        self.superstate = "Base"
         self.state = "Attack"
         self.attackx, self.attacky = 200, 180 # Aligning where on the screen we want to place our "start game" text
-        self.itemx, self.itemy = 400, 180 # Aligning options below the "start game"
-        self.talkx, self.talky = 600, 180
-        self.fleex, self.fleey = 800, 180
+        self.itemx, self.itemy = 600, 180 # Aligning options below the "start game"
+        self.talkx, self.talky = 1000, 180
+        self.fleex, self.fleey = 1400, 180
         self.textx, self.texty = 150, 60
         
         self.player_namex, self.player_namey =  110, 40
@@ -251,11 +252,18 @@ class BattleMenu(Menu):
         self.battle_display.fill(self.game.BLACK)
         self.player_stats.fill(self.game.WHITE)
         self.enemy_stats.fill(self.game.BLACK)
+
         # Draw text directly onto the battle surface so it will be visible
-        self.game.draw_text('Attack', 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
-        self.game.draw_text('Item', 40, self.itemx, self.itemy, surface=self.battle_display)
-        self.game.draw_text('Talk', 40, self.talkx, self.talky, surface=self.battle_display)
-        self.game.draw_text('Flee', 40, self.fleex, self.fleey, surface=self.battle_display)
+        if self.superstate == "Base":
+            self.game.draw_text('Attack', 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
+            self.game.draw_text('Item', 40, self.itemx, self.itemy, surface=self.battle_display)
+            self.game.draw_text('Talk', 40, self.talkx, self.talky, surface=self.battle_display)
+            self.game.draw_text('Flee', 40, self.fleex, self.fleey, surface=self.battle_display)
+        elif self.superstate == "Spells":
+            self.game.draw_text(spells[spellbook[0]][1], 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
+            self.game.draw_text(spells[spellbook[1]][1], 40, self.itemx, self.itemy, surface=self.battle_display)
+            self.game.draw_text(spells[spellbook[2]][1], 40, self.talkx, self.talky, surface=self.battle_display)
+            self.game.draw_text(spells[spellbook[3]][1], 40, self.fleex, self.fleey, surface=self.battle_display)
         
         self.game.draw_text(f"HP: {enemy.CUR_HP} / {enemy.MAX_HP}", 40, self.enemy_hpx, self.enemy_hpy, surface=self.enemy_stats)
         self.game.draw_text(f"{enemy.name}", 40, self.enemy_namex, self.enemy_namey, surface=self.enemy_stats)
@@ -271,7 +279,6 @@ class BattleMenu(Menu):
         if self.enemy_moving == 0:
             self.draw_cursor(surface=self.battle_display)
         self.blit_battle_menu(enemy, enemy_defeated_flag)
-                       
 
     def blit_battle_menu(self, enemy, enemy_defeated_flag=0): # Redisplays the whole battle menu, does NOT affect any values
         self.game.window.blit(enemy.battle_background, (0,0)) # Draw background image
@@ -287,55 +294,103 @@ class BattleMenu(Menu):
 
     def move_cursor(self, key): # the menu from Top to bottom will be Start Game, Options, Credits
         if key == pygame.K_RIGHT:
-            if self.state == 'Attack': # if cursor is at start and we receive an input to move the cursor down, we  must adjust the cursor to move down to options
-                self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy) # midtop is a variable from our MainMenu class
-                self.state = 'Item'
-            elif self.state == 'Item':
-                self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
-                self.state = 'Talk'
-            elif self.state == 'Talk':
-                self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey)
-                self.state = 'Flee'
-            elif self.state == 'Flee':
-                self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
-                self.state = 'Attack'
+            if self.superstate == "Base":
+                if self.state == 'Attack': # if cursor is at start and we receive an input to move the cursor down, we  must adjust the cursor to move down to options
+                    self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy) # midtop is a variable from our MainMenu class
+                    self.state = 'Item'
+                elif self.state == 'Item':
+                    self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
+                    self.state = 'Talk'
+                elif self.state == 'Talk':
+                    self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey)
+                    self.state = 'Flee'
+                elif self.state == 'Flee':
+                    self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
+                    self.state = 'Attack'
+            elif self.superstate == "Spells":
+                if self.state == 'Spell1':
+                    self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy) # midtop is a variable from our MainMenu class
+                    self.state = 'Spell2'
+                elif self.state == 'Spell2':
+                    self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
+                    self.state = 'Spell3'
+                elif self.state == 'Spell3':
+                    self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey)
+                    self.state = 'Spell4'
+                elif self.state == 'Spell4':
+                    self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
+                    self.state = 'Spell1'
         
         if key == pygame.K_LEFT:
-            if self.state == 'Attack': 
-                self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey) # midtop is a variable from our MainMenu class
-                self.state = 'Flee'
-            elif self.state == 'Item':
-                self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
-                self.state = 'Attack'
-            elif self.state == 'Talk':
-                self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy)
-                self.state = 'Item'
-            elif self.state == 'Flee':
-                self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
-                self.state = 'Talk'
+            if self.superstate == "Base":
+                if self.state == 'Attack': 
+                    self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey) # midtop is a variable from our MainMenu class
+                    self.state = 'Flee'
+                elif self.state == 'Item':
+                    self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
+                    self.state = 'Attack'
+                elif self.state == 'Talk':
+                    self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy)
+                    self.state = 'Item'
+                elif self.state == 'Flee':
+                    self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
+                    self.state = 'Talk'
+            elif self.superstate == "Spells":
+                if self.state == 'Spell1': 
+                    self.cursor_rect.midtop = (self.fleex + self.offset, self.fleey) # midtop is a variable from our MainMenu class
+                    self.state = 'Spell4'
+                elif self.state == 'Spell2':
+                    self.cursor_rect.midtop = (self.attackx + self.offset, self.attacky)
+                    self.state = 'Spell1'
+                elif self.state == 'Spell3':
+                    self.cursor_rect.midtop = (self.itemx + self.offset, self.itemy)
+                    self.state = 'Spell2'
+                elif self.state == 'Spell4':
+                    self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
+                    self.state = 'Spell3'
 
     def check_input(self, key, player, enemy):
         successful_move = 0
         self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
         if key == pygame.K_RETURN or key == pygame.K_e: # If the player clicks Enter or INTERACT_KEY
-            if self.state == 'Attack':     
-                self.textbox = "Player Attacks!"               
-                enemy.CUR_HP = max(0, enemy.CUR_HP - player.ATK)
-                self.display_menu(player, enemy)
-                pygame.time.delay(1000)
-                successful_move = 1
-            elif self.state == 'Item':
-                self.textbox = "You don't have any items"
-                successful_move = 0
-            elif self.state == 'Talk':
-               self.textbox ="The enemy doesn't seem to be very talkative"
-               successful_move = 0
-            elif self.state == 'Flee':
-                self.textbox ="Unable to flee!"
-                successful_move = 0
-            else:
-                print ("ERROR: State self.malfunctioned")
-                successful_move = 0
+            if self.superstate == "Base":
+                if self.state == 'Attack':     
+                #    self.textbox = "Player Attacks!"               
+                #    enemy.CUR_HP = max(0, enemy.CUR_HP - player.ATK)
+                #    self.display_menu(player, enemy)
+                #    pygame.time.delay(1000)
+                #    successful_move = 1
+                    self.superstate = "Spells"
+                    self.state = "Spell1"
+                    successful_move = 0
+                elif self.state == 'Item':
+                    self.textbox = "You don't have any items"
+                    successful_move = 0
+                elif self.state == 'Talk':
+                   self.textbox ="The enemy doesn't seem to be very talkative"
+                   successful_move = 0
+                elif self.state == 'Flee':
+                    self.textbox ="Unable to flee!"
+                    successful_move = 0
+                else:
+                    print ("ERROR: State self.malfunctioned")
+                    successful_move = 0
+            elif self.superstate == "Spells":
+                if self.state == "Spell1":
+                    # use first spell
+                    True
+                elif self.state == "Spell2":
+                    # use second spell
+                    True
+                elif self.state == "Spell3":
+                    # use third spell
+                    True
+                elif self.state == "Spell4":
+                    # use fourth spell
+                    True
+                else:
+                    print ("ERROR: Spell State self.malfunctioned")
+                    successful_move = 0
         return successful_move
     
     def enemy_move(self, player, enemy):
