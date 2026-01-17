@@ -213,7 +213,7 @@ class BattleMenu(Menu):
         Menu.__init__(self,game)
         # Use integer dimensions for the surface
         self.battle_display = pygame.Surface((self.game.DISPLAY_W, 300)) # Canvas(dimensions)
-        self.player_stats = pygame.Surface((380, 167))
+        self.player_stats = pygame.Surface((400, 250))
         self.enemy_stats = pygame.Surface((500, 200))
         self.superstate = "Base"
         self.state = "Attack"
@@ -226,6 +226,8 @@ class BattleMenu(Menu):
         self.player_namex, self.player_namey =  110, 40
         self.player_hpx, self.player_hpy = 120, 80
         self.player_xpx, self.player_xpy = 120, 120
+        self.player_manax, self.player_manay = 140, 160
+        self.player_goldx, self.player_goldy = 140, 200
         
         self.enemy_hpx, self.enemy_hpy = 120, 60
         self.enemy_namex, self.enemy_namey = 120, 120
@@ -271,6 +273,9 @@ class BattleMenu(Menu):
         self.game.draw_text(f"HP: {player.CUR_HP} / {player.MAX_HP}", 40, self.player_hpx, self.player_hpy, color=self.game.BLACK, surface=self.player_stats)
         self.game.draw_text(f"{player.name}", 40, self.player_namex, self.player_namey, color=self.game.BLACK, surface=self.player_stats)       
         self.game.draw_text(f"XP: {player.CUR_XP} / {player.XP_NEEDED}", 40, self.player_xpx, self.player_xpy, color=self.game.BLACK, surface=self.player_stats)
+        self.game.draw_text(f"MANA: {player.CUR_MANA} / {player.MAX_MANA}", 40, self.player_manax, self.player_manay, color=self.game.BLACK, surface=self.player_stats)
+        self.game.draw_text(f"GOLD: {player.GOLD}", 40, self.player_goldx, self.player_goldy, color=self.game.BLACK, surface=self.player_stats)
+
         
        #(text, font, colour, x, y, screen, allowed_width)    
        
@@ -285,7 +290,7 @@ class BattleMenu(Menu):
         if enemy.CUR_HP > 0 and enemy_defeated_flag == 0:
             self.game.window.blit(enemy.battle_sprite, (self.game.DISPLAY_W / 2, 350))
         self.game.window.blit(self.battle_display, (0, int((self.game.DISPLAY_H / 2) + 300))) # copy our canvas onto the visible window that our player sees are our top-left XY coordinates
-        self.game.window.blit(self.player_stats, (1420, 673))
+        self.game.window.blit(self.player_stats, (1300, 600))
         self.game.window.blit(self.enemy_stats, (0, 0))
         
         # Copy the pixels from self.game.display (the off-screen canvas) onto self.game.window (the visible screen), starting at coordinates (0, 0)
