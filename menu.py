@@ -260,10 +260,10 @@ class BattleMenu(Menu):
             self.game.draw_text('Talk', 40, self.talkx, self.talky, surface=self.battle_display)
             self.game.draw_text('Flee', 40, self.fleex, self.fleey, surface=self.battle_display)
         elif self.superstate == "Spells":
-            self.game.draw_text(spells[spellbook[0]][1], 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
-            self.game.draw_text(spells[spellbook[1]][1], 40, self.itemx, self.itemy, surface=self.battle_display)
-            self.game.draw_text(spells[spellbook[2]][1], 40, self.talkx, self.talky, surface=self.battle_display)
-            self.game.draw_text(spells[spellbook[3]][1], 40, self.fleex, self.fleey, surface=self.battle_display)
+            self.game.draw_text(spells[player_spellbook[0]][1], 40, self.attackx, self.attacky, surface=self.battle_display) # using updated draw_text that accepts surface variable
+            self.game.draw_text(spells[player_spellbook[1]][1], 40, self.itemx, self.itemy, surface=self.battle_display)
+            self.game.draw_text(spells[player_spellbook[2]][1], 40, self.talkx, self.talky, surface=self.battle_display)
+            self.game.draw_text(spells[player_spellbook[3]][1], 40, self.fleex, self.fleey, surface=self.battle_display)
         
         self.game.draw_text(f"HP: {enemy.CUR_HP} / {enemy.MAX_HP}", 40, self.enemy_hpx, self.enemy_hpy, surface=self.enemy_stats)
         self.game.draw_text(f"{enemy.name}", 40, self.enemy_namex, self.enemy_namey, surface=self.enemy_stats)
@@ -349,6 +349,42 @@ class BattleMenu(Menu):
                     self.cursor_rect.midtop = (self.talkx + self.offset, self.talky)
                     self.state = 'Spell3'
 
+    def attempt_move(self, player, enemy, spell_index):
+        if spell_index >= len(player_spellbook):
+            print("ERROR: spell_index out of range")
+            return 0
+        elif spells[player_spellbook[spell_index]][9] > player.CUR_MANA:
+            self.textbox = "Not enough mana!"
+            return 0
+        elif spells[player_spellbook[spell_index]][10] > player.CUR_HP:
+            self.textbox = "Not enough life!"
+            return 0
+        elif spells[player_spellbook[spell_index]][11] > player.GOLD:
+            self.textbox = "Not enough gold!"
+            return 0
+        else:
+            self.textbox = f"{player.name} uses {spells[player_spellbook[spell_index]][1]}!"
+
+            # deduct costs
+            player.CUR_MANA -= spells[player_spellbook[spell_index]][9]
+            player.CUR_HP -= spells[player_spellbook[spell_index]][10]
+            player.GOLD -= spells[player_spellbook[spell_index]][11]
+
+            # calculate damage based on all elemental interactions of the 3 possible spell types and 3 possible enemy types
+            damage = 0.0
+            for i in range(0, spells[player_spellbook[spell_index]][2]):
+                cur_element_dmg = spells[player_spellbook[spell_index]][6+i]
+                for j in range (0, enemy.NUM_TYPES):
+                    cur_element_dmg *= spell_interactions[type_to_int(spells[player_spellbook[spell_index]][3+i])][type_to_int(enemy.TYPES[j])]
+                damage += cur_element_dmg
+            enemy.CUR_HP = max(0, enemy.CUR_HP - int(damage))
+
+            # attempt to resolve abilities
+            
+            self.display_menu(player, enemy)
+            pygame.time.delay(1000)
+            return 1
+
     def check_input(self, key, player, enemy):
         successful_move = 0
         self.move_cursor(key) # every frame we will check for input and adjust the cursor accordingly
@@ -377,22 +413,19 @@ class BattleMenu(Menu):
                     successful_move = 0
             elif self.superstate == "Spells":
                 if self.state == "Spell1":
-                    # use first spell
-                    True
+                    successful_move = self.attempt_move(player, enemy, 0)
                 elif self.state == "Spell2":
-                    # use second spell
-                    True
+                    successful_move = self.attempt_move(player, enemy, 1)
                 elif self.state == "Spell3":
-                    # use third spell
-                    True
+                    successful_move = self.attempt_move(player, enemy, 2)
                 elif self.state == "Spell4":
-                    # use fourth spell
-                    True
+                    successful_move = self.attempt_move(player, enemy, 3)
                 else:
                     print ("ERROR: Spell State self.malfunctioned")
                     successful_move = 0
         return successful_move
     
+
     def enemy_move(self, player, enemy):
         if enemy.CUR_HP <= 0:
             pygame.time.delay(1000) # wait 1 second
