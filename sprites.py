@@ -13,6 +13,8 @@ class Spritesheet:
         sprite.blit(self.sheet, (0,0), (x, y, width, height)) # selects cutout from sprite sheet image and blits that particular sprite from the image to the screen
         sprite.set_colorkey(BLACK) # Set color key so we don't have a black background
         return sprite 
+
+
 class Player(pygame.sprite.Sprite): # Layer 3
     def __init__(self, game, x, y): # game object, and coordinates to position the player at
 
@@ -71,8 +73,11 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.inBattle = 0
 
         self.LVL = 1
-        self.MAX_HP = 20
-        self.CUR_HP = 20
+        self.MAX_HP = 50
+        self.CUR_HP = 50
+        self.MAX_MANA = 50
+        self.CUR_MANA = 50
+        self.GOLD = 100
         self.ATK = 2
         self.CUR_XP = 0
         self.XP_NEEDED = 10
@@ -255,11 +260,12 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
-        self.MAX_HP = 5
-        self.CUR_HP = 5
+        self.MAX_HP = 50
+        self.CUR_HP = 50
         self.ATK = 1
         self.LVL = 1
-        
+        self.NUM_TYPES = None
+        self.TYPES = [None, None, None]
 
         
     
@@ -334,6 +340,8 @@ class Johnluke(Enemy):
 
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
+        self.NUM_TYPES = 1
+        self.TYPES[0] = "spirit"
 
 class Fly(Enemy):
     battle_sprite = pygame.image.load('img/fly.png')
@@ -341,6 +349,8 @@ class Fly(Enemy):
     name = "Fly"
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
+        self.NUM_TYPES = 1
+        self.TYPES[0] = "basic"
 
 class dialogue_box():
     def __init__(self, game, font):
