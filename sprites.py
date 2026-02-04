@@ -337,6 +337,7 @@ class Enemy(pygame.sprite.Sprite):
     def apply_status_effect(self, status_effect):
         pass  # Placeholder for status effects logic
 
+
 class Johnluke(Enemy):
     battle_sprite = pygame.image.load('img/jl.PNG')
     name = "Johnluke"
@@ -353,6 +354,7 @@ class Johnluke(Enemy):
         super().__init__(game, x, y) # Run parent init function
         self.TYPES = ["spirit"]
 
+
 class Fly(Enemy):
     battle_sprite = pygame.image.load('img/fly.png')
     battle_background = pygame.image.load('./img/grass-water-battle-background.jpg')
@@ -360,6 +362,7 @@ class Fly(Enemy):
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
         self.TYPES = ["basic"]
+
 
 class dialogue_box():
     def __init__(self, game, font):
@@ -471,6 +474,7 @@ class Block(pygame.sprite.Sprite): # Layer 2
         self.rect.x = self.x
         self.rect.y = self.y
 
+
 class Ground(pygame.sprite.Sprite): # Layer 1
     def __init__(self, game, x, y):
         self.game = game
@@ -487,6 +491,7 @@ class Ground(pygame.sprite.Sprite): # Layer 1
         self.rect = self.image.get_rect() # create a rectangle and makes it the same size as self.image
         self.rect.x = self.x # assign the top left coorinates for the rectangle
         self.rect.y = self.y
+
 
 class Button:
                     # coords, width, height, foreground color, background color, text, and fontsize
@@ -518,6 +523,7 @@ class Button:
                 return True
             return False
         return False
+
 
 class Attack(pygame.sprite.Sprite): # inhertis from pygame.sprite.Sprite
     def __init__(self, game, x, y):

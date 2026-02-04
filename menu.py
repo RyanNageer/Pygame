@@ -94,7 +94,6 @@ class Menu():
                         return  # Exit the loop when 'e' is pressed
 
 
-
 class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Menu is the parent, MainMenu is the child
     def __init__(self, game): # needs its own init function and reference to the game
         Menu.__init__(self,game) # Parent.__init__ We reuse menu's init, so now we have all the same menu-class variables for the MainMenu object
@@ -156,6 +155,7 @@ class MainMenu(Menu): # class Child(Parent) MainMenu extends the Menu class. Men
                 self.game.curr_menu = self.game.credits
             self.run_display = False
 
+
 class OptionsMenu(Menu): # Menu subclass
     def __init__(self, game): # pass in game object
         Menu.__init__(self, game) # run init function for Menu
@@ -192,6 +192,7 @@ class OptionsMenu(Menu): # Menu subclass
         # TO-DO: Create a Volume Menu and a Controls Menu
             pass
 
+
 class CreditsMenu(Menu): # child of Menu
     def __init__(self, game):
         Menu.__init__(self,game)
@@ -207,6 +208,7 @@ class CreditsMenu(Menu): # child of Menu
             self.game.draw_text('Credits', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20) # draw_text function we made in the game class
             self.game.draw_text('Ryan Nageer', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 10)
             self.blit_screen() # display shit to screen and set inputs back to false every frame
+
 
 class BattleMenu(Menu):
     def __init__(self, game):
@@ -237,19 +239,15 @@ class BattleMenu(Menu):
         self.textbox = "An enemy approaches!"
         # midtop is one of the position attributes of a Pygame Rect object
         
-        
-
     def battle_init(self, enemy):
         p = inflect.engine() # use the inflect module to check for vowels
         self.textbox = f"{p.a(enemy.name)[0].upper()}{p.a(enemy.name)[1:]} appears!" # picks between a and an and capitalizes the A
         self.state = "Attack"
-        
 
     def display_menu(self, player, enemy, enemy_defeated_flag=0): # Does NOT adjust any values, only displays.
         # Draw a single frame of the battle UI.
         # The outer `Game.battle` loop handles the event polling and input,
         # so this method should only render and return each frame.
-        
         
         self.battle_display.fill(self.game.BLACK)
         self.player_stats.fill(self.game.WHITE)
@@ -275,7 +273,6 @@ class BattleMenu(Menu):
         self.game.draw_text(f"XP: {player.CUR_XP} / {player.XP_NEEDED}", 40, self.player_xpx, self.player_xpy, color=self.game.BLACK, surface=self.player_stats)
         self.game.draw_text(f"MANA: {player.CUR_MANA} / {player.MAX_MANA}", 40, self.player_manax, self.player_manay, color=self.game.BLACK, surface=self.player_stats)
         self.game.draw_text(f"GOLD: {player.GOLD}", 40, self.player_goldx, self.player_goldy, color=self.game.BLACK, surface=self.player_stats)
-
         
        #(text, font, colour, x, y, screen, allowed_width)    
        
@@ -409,7 +406,6 @@ class BattleMenu(Menu):
                     successful_move = 0
         return successful_move
     
-
     def enemy_move(self, player, enemy):
         if enemy.CUR_HP <= 0:
             pygame.time.delay(1000) # wait 1 second
