@@ -1,6 +1,7 @@
 import pygame
 from config import *
 from game import *
+from spells import *
 import math
 import random
 
@@ -17,7 +18,6 @@ class Spritesheet:
 
 class Player(pygame.sprite.Sprite): # Layer 3
     def __init__(self, game, x, y): # game object, and coordinates to position the player at
-
         self.game = game
         self._layer = PLAYER_LAYER
         self.groups = self.game.all_sprites
@@ -36,8 +36,6 @@ class Player(pygame.sprite.Sprite): # Layer 3
         
         self.left_border = 0
         self.right_border = WIN_WIDTH * TILESIZE
-
-
 
         # if we put the animations in the __init__ and add "self" to them we can call them any time insted of having them be in the animate function
         # meaning we'd need to pull the animations every time the animate function runs, which is inefficient
@@ -70,8 +68,8 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.rect.x = self.x
         self.rect.y = self.y
 
+        # Player attributes
         self.inBattle = 0
-
         self.LVL = 1
         self.MAX_HP = 50
         self.CUR_HP = 50
@@ -81,8 +79,17 @@ class Player(pygame.sprite.Sprite): # Layer 3
         self.ATK = 2
         self.CUR_XP = 0
         self.XP_NEEDED = 10
-        self.name = "Player"
-        
+        self.NAME = "Player"
+        # Player status effects (all ints representing number of turns the effect will last))
+        self.BURN = 0
+        self.STUN = 0
+        self.FREEZE = 0
+        self.ATTACKBUFF2X = 0
+        self.ATTACKDEBUFF2X = 0
+        # Player possessions
+        self.INVENTORY = []
+        self.SPELLBOOK = [spell_database[0], spell_database[14], spell_database[15], spell_database[27]]  # For testing, player starts with Flame, Lightning Bolt, Punch, and Thermal Paradox Beam
+        self.EVOLUTIONS = []
 
     def update(self):
         if not self.game.dialogue_active:
@@ -100,7 +107,6 @@ class Player(pygame.sprite.Sprite): # Layer 3
 
         self.x_change = 0
         self.y_change = 0
-
 
     def movement(self):
         keys = pygame.key.get_pressed()
@@ -129,8 +135,6 @@ class Player(pygame.sprite.Sprite): # Layer 3
             # print statements
             print(f'Player World Coordinates: {self.x}, {self.y}\n')
             print(f'Player Rect Hitbox Coordinates: {self.rect.x}, {self.rect.y}\n')
-            
-        
 
     def collide_enemy(self):
         hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
@@ -139,9 +143,6 @@ class Player(pygame.sprite.Sprite): # Layer 3
             self.game.battle_enemy = hits[0]  # Store the specific enemy sprite object that was hit
             #self.kill() # remove player from allsprites group
             #self.game.playing = False # exits the game
-
-            
-        
 
     def collide_blocks(self, direction, sprite_group):
         if direction == 'x':
@@ -175,7 +176,6 @@ class Player(pygame.sprite.Sprite): # Layer 3
                         #sprite.rect.y -= PLAYER_SPEED
     
     def animate(self):
-        
         if self.facing == "down":
             if self.y_change == 0: # if we're standing still, set player to static image
                 self.image = self.game.character_spritesheet.get_sprite(3,2, self.width, self.height)
@@ -260,15 +260,23 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
+        # Enemy attributes
         self.MAX_HP = 50
         self.CUR_HP = 50
         self.ATK = 1
         self.LVL = 1
-        self.NUM_TYPES = None
-        self.TYPES = [None, None, None]
-
+        self.TYPES = None
+        # Enemy status effects (all ints representing number of turns the effect will last))
+        self.BURN = 0
+        self.STUN = 0
+        self.FREEZE = 0
+        self.ATTACKBUFF2X = 0
+        self.ATTACKDEBUFF2X = 0
+        # Enemy possessions (loot to be dropped)
+        self.INVENTORY = None
+        self.SPELLBOOK = None
+        self.EVOLUTIONS = None
         
-    
     def update(self):
         self.movement()
         self.animate()
@@ -326,6 +334,9 @@ class Enemy(pygame.sprite.Sprite):
                     if self.animation_loop >= 3: # when its greater than or equal to 3 we reset the animation back to 1
                         self.animation_loop = 1
 
+    def apply_status_effect(self, status_effect):
+        pass  # Placeholder for status effects logic
+
 class Johnluke(Enemy):
     battle_sprite = pygame.image.load('img/jl.PNG')
     name = "Johnluke"
@@ -340,8 +351,7 @@ class Johnluke(Enemy):
 
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
-        self.NUM_TYPES = 1
-        self.TYPES[0] = "spirit"
+        self.TYPES = ["spirit"]
 
 class Fly(Enemy):
     battle_sprite = pygame.image.load('img/fly.png')
@@ -349,8 +359,7 @@ class Fly(Enemy):
     name = "Fly"
     def __init__(self, game, x ,y):
         super().__init__(game, x, y) # Run parent init function
-        self.NUM_TYPES = 1
-        self.TYPES[0] = "basic"
+        self.TYPES = ["basic"]
 
 class dialogue_box():
     def __init__(self, game, font):
